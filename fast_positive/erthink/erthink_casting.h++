@@ -32,7 +32,8 @@
 #include <cstring>
 #endif /* ERTHINK_HAVE_std_bit_cast */
 
-#if defined(__cpp_lib_concepts) && __cpp_lib_concepts >= 202002L
+#if defined(__cpp_lib_concepts) && __cpp_lib_concepts >= 202002L &&            \
+    (!defined(__clang__) || __clang_major__ >= 14)
 #include <concepts>
 #define ERTHINK_HAVE_cxx_concepts 1
 #else
