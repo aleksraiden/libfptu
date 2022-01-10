@@ -24,9 +24,9 @@ TEST(Fetch, Invalid) {
 
   EXPECT_EQ(nullptr, fptu_fetch(ro, nullptr, 0, 0));
   EXPECT_EQ(nullptr, fptu_fetch(ro, nullptr, fptu_max_tuple_bytes / 2,
-                                fptu::max_fields / 2));
-  EXPECT_EQ(nullptr,
-            fptu_fetch(ro, nullptr, fptu_max_tuple_bytes, fptu::max_fields));
+                                fptu_legacy::max_fields / 2));
+  EXPECT_EQ(nullptr, fptu_fetch(ro, nullptr, fptu_max_tuple_bytes,
+                                fptu_legacy::max_fields));
   EXPECT_EQ(nullptr, fptu_fetch(ro, nullptr, ~0u, ~0u));
 
   char space_exactly_noitems[fptu_rw::pure_tuple_size()];
@@ -34,77 +34,80 @@ TEST(Fetch, Invalid) {
                                 sizeof(space_exactly_noitems), 1));
   EXPECT_EQ(nullptr,
             fptu_fetch(ro, space_exactly_noitems, sizeof(space_exactly_noitems),
-                       fptu::max_fields));
+                       fptu_legacy::max_fields));
   EXPECT_EQ(nullptr, fptu_fetch(ro, nullptr, sizeof(space_exactly_noitems), 0));
   EXPECT_EQ(nullptr, fptu_fetch(ro, space_exactly_noitems,
                                 sizeof(space_exactly_noitems) - 1, 0));
   EXPECT_EQ(nullptr, fptu_fetch(ro, space_exactly_noitems, 0, 0));
   EXPECT_EQ(nullptr, fptu_fetch(ro, space_exactly_noitems, 0, 1));
   EXPECT_EQ(nullptr,
-            fptu_fetch(ro, space_exactly_noitems, 0, fptu::max_fields));
-  EXPECT_EQ(nullptr,
-            fptu_fetch(ro, space_exactly_noitems, 0, fptu::max_fields * 2));
+            fptu_fetch(ro, space_exactly_noitems, 0, fptu_legacy::max_fields));
+  EXPECT_EQ(nullptr, fptu_fetch(ro, space_exactly_noitems, 0,
+                                fptu_legacy::max_fields * 2));
   EXPECT_EQ(nullptr, fptu_fetch(ro, space_exactly_noitems, 0, ~0u));
 
   char space_maximum[fptu_rw::pure_tuple_size() + fptu_max_tuple_bytes];
   EXPECT_EQ(nullptr, fptu_fetch(ro, space_maximum, sizeof(space_maximum),
-                                fptu::max_fields + 1));
+                                fptu_legacy::max_fields + 1));
   EXPECT_EQ(nullptr, fptu_fetch(ro, nullptr, sizeof(space_maximum), 0));
   EXPECT_EQ(nullptr, fptu_fetch(ro, space_exactly_noitems, ~0u, 1));
-  ASSERT_EQ(nullptr, fptu_fetch(ro, space_exactly_noitems,
-                                fptu_buffer_limit + 1, fptu::max_fields));
+  ASSERT_EQ(nullptr,
+            fptu_fetch(ro, space_exactly_noitems, fptu_buffer_limit + 1,
+                       fptu_legacy::max_fields));
 
   fptu_rw *pt;
   pt = fptu_fetch(ro, space_exactly_noitems, sizeof(space_exactly_noitems), 0);
   ASSERT_NE(nullptr, pt);
-  EXPECT_STREQ(nullptr, fptu::check(pt));
+  EXPECT_STREQ(nullptr, fptu_legacy::check(pt));
   pt = fptu_fetch(ro, space_maximum, sizeof(space_maximum), 0);
   ASSERT_NE(nullptr, pt);
-  EXPECT_STREQ(nullptr, fptu::check(pt));
+  EXPECT_STREQ(nullptr, fptu_legacy::check(pt));
   pt = fptu_fetch(ro, space_maximum, sizeof(space_maximum), 1);
   ASSERT_NE(nullptr, pt);
-  EXPECT_STREQ(nullptr, fptu::check(pt));
+  EXPECT_STREQ(nullptr, fptu_legacy::check(pt));
   pt = fptu_fetch(ro, space_maximum, sizeof(space_maximum),
-                  fptu::max_fields / 2);
+                  fptu_legacy::max_fields / 2);
   ASSERT_NE(nullptr, pt);
-  EXPECT_STREQ(nullptr, fptu::check(pt));
-  pt = fptu_fetch(ro, space_maximum, sizeof(space_maximum), fptu::max_fields);
+  EXPECT_STREQ(nullptr, fptu_legacy::check(pt));
+  pt = fptu_fetch(ro, space_maximum, sizeof(space_maximum),
+                  fptu_legacy::max_fields);
   ASSERT_NE(nullptr, pt);
-  EXPECT_STREQ(nullptr, fptu::check(pt));
+  EXPECT_STREQ(nullptr, fptu_legacy::check(pt));
 }
 
 TEST(Fetch, Base) {
-  char origin_space[fptu::buffer_enough];
-  char fetched_space[fptu::buffer_enough];
+  char origin_space[fptu_legacy::buffer_enough];
+  char fetched_space[fptu_legacy::buffer_enough];
   fptu_ro origin_ro, fetched_ro;
   fptu_rw *origin_pt, *fetched_pt;
 
-  origin_pt = fptu_init(origin_space, sizeof(origin_space), fptu::max_fields);
+  origin_pt =
+      fptu_init(origin_space, sizeof(origin_space), fptu_legacy::max_fields);
   ASSERT_NE(nullptr, origin_pt);
-  EXPECT_STREQ(nullptr, fptu::check(origin_pt));
+  EXPECT_STREQ(nullptr, fptu_legacy::check(origin_pt));
   origin_ro = fptu_take_noshrink(origin_pt);
-  ASSERT_STREQ(nullptr, fptu::check(origin_ro));
-  EXPECT_EQ(size_t(fptu::unit_size), origin_ro.total_bytes);
+  ASSERT_STREQ(nullptr, fptu_legacy::check(origin_ro));
+  EXPECT_EQ(size_t(fptu_legacy::unit_size), origin_ro.total_bytes);
 
   // check empty without more-items
   fetched_pt = fptu_fetch(origin_ro, fetched_space, sizeof(fetched_space), 0);
   ASSERT_NE(nullptr, fetched_pt);
-  EXPECT_STREQ(nullptr, fptu::check(fetched_pt));
+  EXPECT_STREQ(nullptr, fptu_legacy::check(fetched_pt));
 
   fetched_ro = fptu_take_noshrink(fetched_pt);
-  ASSERT_STREQ(nullptr, fptu::check(fetched_ro));
+  ASSERT_STREQ(nullptr, fptu_legacy::check(fetched_ro));
   ASSERT_EQ(origin_ro.total_bytes, fetched_ro.total_bytes);
   EXPECT_EQ(0,
             memcmp(origin_ro.units, fetched_ro.units, origin_ro.total_bytes));
 
   // check empty with max-more-items
   fetched_pt = fptu_fetch(origin_ro, fetched_space, sizeof(fetched_space),
-                          fptu::max_fields);
+                          fptu_legacy::max_fields);
   ASSERT_NE(nullptr, fetched_pt);
-  EXPECT_STREQ(nullptr, fptu::check(fetched_pt));
+  EXPECT_STREQ(nullptr, fptu_legacy::check(fetched_pt));
 
   fetched_ro = fptu_take_noshrink(fetched_pt);
-  ASSERT_STREQ(nullptr, fptu::check(fetched_ro));
+  ASSERT_STREQ(nullptr, fptu_legacy::check(fetched_ro));
   ASSERT_EQ(origin_ro.total_bytes, fetched_ro.total_bytes);
   EXPECT_EQ(0,
             memcmp(origin_ro.units, fetched_ro.units, origin_ro.total_bytes));
@@ -118,19 +121,19 @@ TEST(Fetch, Base) {
 
   // adds header-only fields and check
   EXPECT_EQ(FPTU_OK, fptu_insert_uint16(origin_pt, fptu_max_cols, 42));
-  ASSERT_STREQ(nullptr, fptu::check(origin_pt));
+  ASSERT_STREQ(nullptr, fptu_legacy::check(origin_pt));
   origin_ro = fptu_take_noshrink(origin_pt);
-  ASSERT_STREQ(nullptr, fptu::check(origin_ro));
-  EXPECT_EQ(size_t(fptu::unit_size * 2), origin_ro.total_bytes);
+  ASSERT_STREQ(nullptr, fptu_legacy::check(origin_ro));
+  EXPECT_EQ(size_t(fptu_legacy::unit_size * 2), origin_ro.total_bytes);
 
   // check with max-more-items
   fetched_pt = fptu_fetch(origin_ro, fetched_space, sizeof(fetched_space),
-                          fptu::max_fields);
+                          fptu_legacy::max_fields);
   ASSERT_NE(nullptr, fetched_pt);
-  EXPECT_STREQ(nullptr, fptu::check(fetched_pt));
+  EXPECT_STREQ(nullptr, fptu_legacy::check(fetched_pt));
 
   fetched_ro = fptu_take_noshrink(fetched_pt);
-  ASSERT_STREQ(nullptr, fptu::check(fetched_ro));
+  ASSERT_STREQ(nullptr, fptu_legacy::check(fetched_ro));
   ASSERT_EQ(origin_ro.total_bytes, fetched_ro.total_bytes);
   EXPECT_EQ(0,
             memcmp(origin_ro.units, fetched_ro.units, origin_ro.total_bytes));
@@ -145,33 +148,34 @@ TEST(Fetch, Base) {
   // check without more-items
   fetched_pt = fptu_fetch(origin_ro, fetched_space, sizeof(fetched_space), 0);
   ASSERT_NE(nullptr, fetched_pt);
-  EXPECT_STREQ(nullptr, fptu::check(fetched_pt));
+  EXPECT_STREQ(nullptr, fptu_legacy::check(fetched_pt));
 
   fetched_ro = fptu_take_noshrink(fetched_pt);
-  ASSERT_STREQ(nullptr, fptu::check(fetched_ro));
+  ASSERT_STREQ(nullptr, fptu_legacy::check(fetched_ro));
   ASSERT_EQ(origin_ro.total_bytes, fetched_ro.total_bytes);
   EXPECT_EQ(0,
             memcmp(origin_ro.units, fetched_ro.units, origin_ro.total_bytes));
 
   // re-create, adds fileds with payload and check
-  origin_pt = fptu_init(origin_space, sizeof(origin_space), fptu::max_fields);
+  origin_pt =
+      fptu_init(origin_space, sizeof(origin_space), fptu_legacy::max_fields);
   ASSERT_NE(nullptr, origin_pt);
-  EXPECT_STREQ(nullptr, fptu::check(origin_pt));
+  EXPECT_STREQ(nullptr, fptu_legacy::check(origin_pt));
 
   EXPECT_EQ(FPTU_OK, fptu_insert_uint32(origin_pt, fptu_max_cols, 42));
-  ASSERT_STREQ(nullptr, fptu::check(origin_pt));
+  ASSERT_STREQ(nullptr, fptu_legacy::check(origin_pt));
   origin_ro = fptu_take_noshrink(origin_pt);
-  ASSERT_STREQ(nullptr, fptu::check(origin_ro));
-  EXPECT_EQ(size_t(fptu::unit_size * 3), origin_ro.total_bytes);
+  ASSERT_STREQ(nullptr, fptu_legacy::check(origin_ro));
+  EXPECT_EQ(size_t(fptu_legacy::unit_size * 3), origin_ro.total_bytes);
 
   // check with max-more-items
   fetched_pt = fptu_fetch(origin_ro, fetched_space, sizeof(fetched_space),
-                          fptu::max_fields);
+                          fptu_legacy::max_fields);
   ASSERT_NE(nullptr, fetched_pt);
-  EXPECT_STREQ(nullptr, fptu::check(fetched_pt));
+  EXPECT_STREQ(nullptr, fptu_legacy::check(fetched_pt));
 
   fetched_ro = fptu_take_noshrink(fetched_pt);
-  ASSERT_STREQ(nullptr, fptu::check(fetched_ro));
+  ASSERT_STREQ(nullptr, fptu_legacy::check(fetched_ro));
   ASSERT_EQ(origin_ro.total_bytes, fetched_ro.total_bytes);
   EXPECT_EQ(0,
             memcmp(origin_ro.units, fetched_ro.units, origin_ro.total_bytes));
@@ -186,18 +190,18 @@ TEST(Fetch, Base) {
   // check without more-items
   fetched_pt = fptu_fetch(origin_ro, fetched_space, sizeof(fetched_space), 0);
   ASSERT_NE(nullptr, fetched_pt);
-  EXPECT_STREQ(nullptr, fptu::check(fetched_pt));
+  EXPECT_STREQ(nullptr, fptu_legacy::check(fetched_pt));
 
   fetched_ro = fptu_take_noshrink(fetched_pt);
-  ASSERT_STREQ(nullptr, fptu::check(fetched_ro));
+  ASSERT_STREQ(nullptr, fptu_legacy::check(fetched_ro));
   ASSERT_EQ(origin_ro.total_bytes, fetched_ro.total_bytes);
   EXPECT_EQ(0,
             memcmp(origin_ro.units, fetched_ro.units, origin_ro.total_bytes));
 }
 
 TEST(Fetch, Variate) {
-  char origin_space[fptu::buffer_enough];
-  char fetched_space[fptu::buffer_enough];
+  char origin_space[fptu_legacy::buffer_enough];
+  char fetched_space[fptu_legacy::buffer_enough];
   fptu_ro origin_ro, fetched_ro;
   fptu_rw *origin_pt, *fetched_pt;
 
@@ -211,9 +215,9 @@ TEST(Fetch, Variate) {
 
   static const unsigned items_cases[] = {
       /* clang-format off */
-        0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 42, ~0u, fptu::max_fields / 3,
-        fptu::max_fields / 2, fptu::max_fields, fptu::max_fields + 1,
-        fptu::max_fields * 2
+        0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 42, ~0u, fptu_legacy::max_fields / 3,
+        fptu_legacy::max_fields / 2, fptu_legacy::max_fields, fptu_legacy::max_fields + 1,
+        fptu_legacy::max_fields * 2
       /* clang-format on */
   };
 
@@ -223,27 +227,28 @@ TEST(Fetch, Variate) {
 
     for (auto more_items : items_cases) {
 
-      origin_pt =
-          fptu_init(origin_space, sizeof(origin_space), fptu::max_fields);
+      origin_pt = fptu_init(origin_space, sizeof(origin_space),
+                            fptu_legacy::max_fields);
       ASSERT_NE(nullptr, origin_pt);
-      EXPECT_STREQ(nullptr, fptu::check(origin_pt));
+      EXPECT_STREQ(nullptr, fptu_legacy::check(origin_pt));
       origin_ro = fptu_take_noshrink(origin_pt);
-      ASSERT_STREQ(nullptr, fptu::check(origin_ro));
-      EXPECT_EQ(size_t(fptu::unit_size), origin_ro.total_bytes);
+      ASSERT_STREQ(nullptr, fptu_legacy::check(origin_ro));
+      EXPECT_EQ(size_t(fptu_legacy::unit_size), origin_ro.total_bytes);
 
       // check empty
       size_t origin_items =
           (size_t)(fptu_end_ro(origin_ro) - fptu_begin_ro(origin_ro));
-      size_t origin_payload_bytes = origin_ro.total_bytes -
-                                    fptu::details::units2bytes(origin_items) -
-                                    fptu::unit_size;
+      size_t origin_payload_bytes =
+          origin_ro.total_bytes -
+          fptu_legacy::details::units2bytes(origin_items) -
+          fptu_legacy::unit_size;
       SCOPED_TRACE(
           "origin.items " + std::to_string(origin_items) +
           ", origin.payload_bytes " + std::to_string(origin_payload_bytes) +
           ", fetch.buffer_space " + std::to_string(fetch_buffer_space) +
           ", fetch.more_items " + std::to_string(more_items));
       fetched_pt = fptu_fetch(origin_ro, fetched_space, bytes, more_items);
-      if (more_items > fptu::max_fields ||
+      if (more_items > fptu_legacy::max_fields ||
           bytes < fptu_space(origin_items + more_items, origin_payload_bytes)) {
         EXPECT_EQ(nullptr, fetched_pt);
       } else {
@@ -252,27 +257,27 @@ TEST(Fetch, Variate) {
       if (!fetched_pt)
         continue;
 
-      EXPECT_GE(0, (int)fptu::check_and_get_buffer_size(origin_ro, more_items,
-                                                        0, nullptr));
+      EXPECT_GE(0, (int)fptu_legacy::check_and_get_buffer_size(
+                       origin_ro, more_items, 0, nullptr));
       const char *error = "clean me";
-      EXPECT_GE(bytes, fptu::check_and_get_buffer_size(origin_ro, more_items, 0,
-                                                       &error));
+      EXPECT_GE(bytes, fptu_legacy::check_and_get_buffer_size(
+                           origin_ro, more_items, 0, &error));
       EXPECT_STREQ(nullptr, error);
-      EXPECT_STREQ(nullptr, fptu::check(fetched_pt));
+      EXPECT_STREQ(nullptr, fptu_legacy::check(fetched_pt));
       fetched_ro = fptu_take_noshrink(fetched_pt);
-      ASSERT_STREQ(nullptr, fptu::check(fetched_ro));
+      ASSERT_STREQ(nullptr, fptu_legacy::check(fetched_ro));
       ASSERT_EQ(origin_ro.total_bytes, fetched_ro.total_bytes);
       EXPECT_EQ(
           0, memcmp(origin_ro.units, fetched_ro.units, origin_ro.total_bytes));
 
-      if (more_items + origin_items >= fptu::max_fields) {
+      if (more_items + origin_items >= fptu_legacy::max_fields) {
         EXPECT_EQ(origin_pt->pivot_, fetched_pt->pivot_);
         EXPECT_EQ(origin_pt->tail_, fetched_pt->tail_);
         EXPECT_EQ(origin_pt->head_, fetched_pt->head_);
         EXPECT_EQ(origin_pt->junk_.count, fetched_pt->junk_.count);
         EXPECT_EQ(origin_pt->junk_.volume, fetched_pt->junk_.volume);
       }
-      if (bytes == fptu::buffer_enough) {
+      if (bytes == fptu_legacy::buffer_enough) {
         EXPECT_EQ(origin_pt->end_, fetched_pt->end_);
       }
 
@@ -282,23 +287,24 @@ TEST(Fetch, Variate) {
 
         EXPECT_EQ(FPTU_OK,
                   fptu_insert_uint16(origin_pt, fptu_max_cols, uint16_t(n)));
-        ASSERT_STREQ(nullptr, fptu::check(origin_pt));
+        ASSERT_STREQ(nullptr, fptu_legacy::check(origin_pt));
         origin_ro = fptu_take_noshrink(origin_pt);
-        ASSERT_STREQ(nullptr, fptu::check(origin_ro));
-        EXPECT_EQ(size_t(fptu::unit_size * (n + 1)), origin_ro.total_bytes);
+        ASSERT_STREQ(nullptr, fptu_legacy::check(origin_ro));
+        EXPECT_EQ(size_t(fptu_legacy::unit_size * (n + 1)),
+                  origin_ro.total_bytes);
 
         origin_items =
             (size_t)(fptu_end_ro(origin_ro) - fptu_begin_ro(origin_ro));
         origin_payload_bytes = origin_ro.total_bytes -
-                               fptu::details::units2bytes(origin_items) -
-                               fptu::unit_size;
+                               fptu_legacy::details::units2bytes(origin_items) -
+                               fptu_legacy::unit_size;
         SCOPED_TRACE("origin.items " + std::to_string(origin_items) +
                      ", origin.payload_bytes " +
                      std::to_string(origin_payload_bytes) + ", fetch.space " +
                      std::to_string(fetch_buffer_space) + ", more_items " +
                      std::to_string(more_items));
         fetched_pt = fptu_fetch(origin_ro, fetched_space, bytes, more_items);
-        if (more_items > fptu::max_fields ||
+        if (more_items > fptu_legacy::max_fields ||
             bytes <
                 fptu_space(origin_items + more_items, origin_payload_bytes)) {
           EXPECT_EQ(nullptr, fetched_pt);
@@ -308,55 +314,56 @@ TEST(Fetch, Variate) {
         if (!fetched_pt)
           continue;
 
-        EXPECT_GE(bytes, fptu::check_and_get_buffer_size(origin_ro, more_items,
-                                                         0, &error));
+        EXPECT_GE(bytes, fptu_legacy::check_and_get_buffer_size(
+                             origin_ro, more_items, 0, &error));
         EXPECT_STREQ(nullptr, error);
-        EXPECT_STREQ(nullptr, fptu::check(fetched_pt));
+        EXPECT_STREQ(nullptr, fptu_legacy::check(fetched_pt));
         fetched_ro = fptu_take_noshrink(fetched_pt);
-        ASSERT_STREQ(nullptr, fptu::check(fetched_ro));
+        ASSERT_STREQ(nullptr, fptu_legacy::check(fetched_ro));
         ASSERT_EQ(origin_ro.total_bytes, fetched_ro.total_bytes);
         EXPECT_EQ(0, memcmp(origin_ro.units, fetched_ro.units,
                             origin_ro.total_bytes));
 
-        if (more_items + origin_items >= fptu::max_fields) {
+        if (more_items + origin_items >= fptu_legacy::max_fields) {
           EXPECT_EQ(origin_pt->pivot_, fetched_pt->pivot_);
           EXPECT_EQ(origin_pt->tail_, fetched_pt->tail_);
           EXPECT_EQ(origin_pt->head_, fetched_pt->head_);
           EXPECT_EQ(origin_pt->junk_.count, fetched_pt->junk_.count);
           EXPECT_EQ(origin_pt->junk_.volume, fetched_pt->junk_.volume);
         }
-        if (bytes == fptu::buffer_enough) {
+        if (bytes == fptu_legacy::buffer_enough) {
           EXPECT_EQ(origin_pt->end_, fetched_pt->end_);
         }
       }
 
-      origin_pt =
-          fptu_init(origin_space, sizeof(origin_space), fptu::max_fields);
+      origin_pt = fptu_init(origin_space, sizeof(origin_space),
+                            fptu_legacy::max_fields);
       ASSERT_NE(nullptr, origin_pt);
-      EXPECT_STREQ(nullptr, fptu::check(origin_pt));
+      EXPECT_STREQ(nullptr, fptu_legacy::check(origin_pt));
 
       // adds fileds with payload and check
       for (unsigned n = 1; n < 11; ++n) {
         SCOPED_TRACE("with-payload, n = " + std::to_string(n));
 
         EXPECT_EQ(FPTU_OK, fptu_insert_uint32(origin_pt, fptu_max_cols, n));
-        ASSERT_STREQ(nullptr, fptu::check(origin_pt));
+        ASSERT_STREQ(nullptr, fptu_legacy::check(origin_pt));
         origin_ro = fptu_take_noshrink(origin_pt);
-        ASSERT_STREQ(nullptr, fptu::check(origin_ro));
-        EXPECT_EQ(size_t(fptu::unit_size * (n + n + 1)), origin_ro.total_bytes);
+        ASSERT_STREQ(nullptr, fptu_legacy::check(origin_ro));
+        EXPECT_EQ(size_t(fptu_legacy::unit_size * (n + n + 1)),
+                  origin_ro.total_bytes);
 
         origin_items =
             (size_t)(fptu_end_ro(origin_ro) - fptu_begin_ro(origin_ro));
         origin_payload_bytes = origin_ro.total_bytes -
-                               fptu::details::units2bytes(origin_items) -
-                               fptu::unit_size;
+                               fptu_legacy::details::units2bytes(origin_items) -
+                               fptu_legacy::unit_size;
         SCOPED_TRACE("origin.items " + std::to_string(origin_items) +
                      ", origin.payload_bytes " +
                      std::to_string(origin_payload_bytes) + ", fetch.space " +
                      std::to_string(fetch_buffer_space) + ", more_items " +
                      std::to_string(more_items));
         fetched_pt = fptu_fetch(origin_ro, fetched_space, bytes, more_items);
-        if (more_items > fptu::max_fields ||
+        if (more_items > fptu_legacy::max_fields ||
             bytes <
                 fptu_space(origin_items + more_items, origin_payload_bytes)) {
           EXPECT_EQ(nullptr, fetched_pt);
@@ -366,24 +373,24 @@ TEST(Fetch, Variate) {
         if (!fetched_pt)
           continue;
 
-        EXPECT_GE(bytes, fptu::check_and_get_buffer_size(origin_ro, more_items,
-                                                         0, &error));
+        EXPECT_GE(bytes, fptu_legacy::check_and_get_buffer_size(
+                             origin_ro, more_items, 0, &error));
         EXPECT_STREQ(nullptr, error);
-        EXPECT_STREQ(nullptr, fptu::check(fetched_pt));
+        EXPECT_STREQ(nullptr, fptu_legacy::check(fetched_pt));
         fetched_ro = fptu_take_noshrink(fetched_pt);
-        ASSERT_STREQ(nullptr, fptu::check(fetched_ro));
+        ASSERT_STREQ(nullptr, fptu_legacy::check(fetched_ro));
         ASSERT_EQ(origin_ro.total_bytes, fetched_ro.total_bytes);
         EXPECT_EQ(0, memcmp(origin_ro.units, fetched_ro.units,
                             origin_ro.total_bytes));
 
-        if (more_items + origin_items >= fptu::max_fields) {
+        if (more_items + origin_items >= fptu_legacy::max_fields) {
           EXPECT_EQ(origin_pt->pivot_, fetched_pt->pivot_);
           EXPECT_EQ(origin_pt->tail_, fetched_pt->tail_);
           EXPECT_EQ(origin_pt->head_, fetched_pt->head_);
           EXPECT_EQ(origin_pt->junk_.count, fetched_pt->junk_.count);
           EXPECT_EQ(origin_pt->junk_.volume, fetched_pt->junk_.volume);
         }
-        if (bytes == fptu::buffer_enough) {
+        if (bytes == fptu_legacy::buffer_enough) {
           EXPECT_EQ(origin_pt->end_, fetched_pt->end_);
         }
       }

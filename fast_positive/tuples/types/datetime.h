@@ -175,6 +175,7 @@ public:
   cxx11_constexpr uint64_t fixedpoint_32dot32() const {
     return value_.fixedpoint;
   }
+  cxx11_constexpr uint64_t &fixedpoint_32dot32() { return value_.fixedpoint; }
 
   datetime_t() = default;
   cxx11_constexpr datetime_t(const datetime_t &) = default;

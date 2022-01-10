@@ -20,17 +20,6 @@
 #include "fast_positive/tuples/internal.h"
 #include "fast_positive/tuples/legacy.h"
 
-namespace {
-cxx11_constexpr fptu_type genus2legacy(fptu::genus type, unsigned colnum = 0) {
-  return fptu_type(fptu::details::make_tag(type, colnum, true, true, false));
-}
-
-cxx11_constexpr fptu::details::tag_t legacy2tag(const fptu_tag_t tag) {
-  return fptu::details::make_tag(fptu::details::loose_genus_and_id_t(tag), true,
-                                 true, false);
-}
-} // namespace
-
 struct FPTU_API_TYPE fptu_field : public fptu::details::field_loose {
   using base = fptu::details::field_loose;
   fptu_field() = delete;
@@ -38,7 +27,7 @@ struct FPTU_API_TYPE fptu_field : public fptu::details::field_loose {
 
   unsigned cxx11_constexpr colnum() const { return base::id(); }
   fptu_type cxx11_constexpr legacy_type() const {
-    return genus2legacy(base::type());
+    return fptu_legacy::genus2legacy(base::type());
   }
 };
 
@@ -108,7 +97,7 @@ static __inline double fptu_fp64_denil(void) { return fptu_fp64_denil_value; }
 
 //------------------------------------------------------------------------------
 
-namespace fptu {
+namespace fptu_legacy {
 
 inline unsigned get_colnum(fptu_tag_t tag) {
   return fptu::details::tag2id(legacy2tag(tag));
@@ -185,4 +174,4 @@ static inline __maybe_unused fptu_lge cmpbin(const void *a, const void *b,
   return diff2lge(std::memcmp(a, b, bytes));
 }
 
-} // namespace fptu
+} // namespace fptu_legacy

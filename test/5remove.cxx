@@ -27,151 +27,171 @@ static bool field_filter_any(const fptu_field *, void *context,
 }
 
 TEST(Remove, Base) {
-  char space[fptu::buffer_enough];
-  fptu_rw *pt = fptu_init(space, sizeof(space), fptu::max_fields);
+  char space[fptu_legacy::buffer_enough];
+  fptu_rw *pt = fptu_init(space, sizeof(space), fptu_legacy::max_fields);
   ASSERT_NE(nullptr, pt);
 
   // try to remove non-present field
-  ASSERT_STREQ(nullptr, fptu::check(pt));
-  EXPECT_EQ(0, fptu::erase(pt, 0, fptu_uint32));
-  EXPECT_STREQ(nullptr, fptu::check(pt));
+  ASSERT_STREQ(nullptr, fptu_legacy::check(pt));
+  EXPECT_EQ(0, fptu_legacy::erase(pt, 0, fptu_uint32));
+  EXPECT_STREQ(nullptr, fptu_legacy::check(pt));
 
   // insert/delete one header-only field
-  ASSERT_STREQ(nullptr, fptu::check(pt));
+  ASSERT_STREQ(nullptr, fptu_legacy::check(pt));
   EXPECT_EQ(FPTU_OK, fptu_insert_uint16(pt, 0, 0));
-  EXPECT_STREQ(nullptr, fptu::check(pt));
-  EXPECT_EQ(1u, fptu::field_count(pt, field_filter_any, nullptr, nullptr));
-  EXPECT_EQ(1, fptu::erase(pt, 0, fptu_uint16));
-  EXPECT_STREQ(nullptr, fptu::check(pt));
-  EXPECT_EQ(0, fptu::erase(pt, 0, fptu_uint32));
-  EXPECT_STREQ(nullptr, fptu::check(pt));
+  EXPECT_STREQ(nullptr, fptu_legacy::check(pt));
+  EXPECT_EQ(1u,
+            fptu_legacy::field_count(pt, field_filter_any, nullptr, nullptr));
+  EXPECT_EQ(1, fptu_legacy::erase(pt, 0, fptu_uint16));
+  EXPECT_STREQ(nullptr, fptu_legacy::check(pt));
+  EXPECT_EQ(0, fptu_legacy::erase(pt, 0, fptu_uint32));
+  EXPECT_STREQ(nullptr, fptu_legacy::check(pt));
 
-  EXPECT_EQ(0u, fptu::field_count(pt, field_filter_any, nullptr, nullptr));
+  EXPECT_EQ(0u,
+            fptu_legacy::field_count(pt, field_filter_any, nullptr, nullptr));
   EXPECT_EQ(0u, pt->junk_bytes());
   EXPECT_EQ(pt->pivot_, pt->head_);
   EXPECT_EQ(pt->pivot_, pt->tail_);
 
   // insert header-only a,b; then delete b,a
-  ASSERT_STREQ(nullptr, fptu::check(pt));
+  ASSERT_STREQ(nullptr, fptu_legacy::check(pt));
   EXPECT_EQ(FPTU_OK, fptu_insert_uint16(pt, 0xA, 0));
   EXPECT_EQ(FPTU_OK, fptu_insert_uint16(pt, 0xB, 0));
-  EXPECT_STREQ(nullptr, fptu::check(pt));
-  EXPECT_EQ(2u, fptu::field_count(pt, field_filter_any, nullptr, nullptr));
+  EXPECT_STREQ(nullptr, fptu_legacy::check(pt));
+  EXPECT_EQ(2u,
+            fptu_legacy::field_count(pt, field_filter_any, nullptr, nullptr));
 
-  EXPECT_EQ(1, fptu::erase(pt, 0xB, fptu_uint16));
-  EXPECT_STREQ(nullptr, fptu::check(pt));
-  EXPECT_EQ(1u, fptu::field_count(pt, field_filter_any, nullptr, nullptr));
+  EXPECT_EQ(1, fptu_legacy::erase(pt, 0xB, fptu_uint16));
+  EXPECT_STREQ(nullptr, fptu_legacy::check(pt));
+  EXPECT_EQ(1u,
+            fptu_legacy::field_count(pt, field_filter_any, nullptr, nullptr));
   EXPECT_EQ(0u, pt->junk_bytes());
 
-  EXPECT_EQ(1, fptu::erase(pt, 0xA, fptu_uint16));
-  EXPECT_STREQ(nullptr, fptu::check(pt));
-  EXPECT_EQ(0u, fptu::field_count(pt, field_filter_any, nullptr, nullptr));
+  EXPECT_EQ(1, fptu_legacy::erase(pt, 0xA, fptu_uint16));
+  EXPECT_STREQ(nullptr, fptu_legacy::check(pt));
+  EXPECT_EQ(0u,
+            fptu_legacy::field_count(pt, field_filter_any, nullptr, nullptr));
   EXPECT_EQ(0u, pt->junk_bytes());
   EXPECT_EQ(pt->pivot_, pt->head_);
   EXPECT_EQ(pt->pivot_, pt->tail_);
 
   // insert header-only a,b; then delete a,b
-  ASSERT_STREQ(nullptr, fptu::check(pt));
+  ASSERT_STREQ(nullptr, fptu_legacy::check(pt));
   EXPECT_EQ(FPTU_OK, fptu_insert_uint16(pt, 0xA, 0));
   EXPECT_EQ(FPTU_OK, fptu_insert_uint16(pt, 0xB, 0));
-  EXPECT_STREQ(nullptr, fptu::check(pt));
-  EXPECT_EQ(2u, fptu::field_count(pt, field_filter_any, nullptr, nullptr));
+  EXPECT_STREQ(nullptr, fptu_legacy::check(pt));
+  EXPECT_EQ(2u,
+            fptu_legacy::field_count(pt, field_filter_any, nullptr, nullptr));
 
-  EXPECT_EQ(1, fptu::erase(pt, 0xA, fptu_uint16));
-  EXPECT_STREQ(nullptr, fptu::check(pt));
-  EXPECT_EQ(1u, fptu::field_count(pt, field_filter_any, nullptr, nullptr));
+  EXPECT_EQ(1, fptu_legacy::erase(pt, 0xA, fptu_uint16));
+  EXPECT_STREQ(nullptr, fptu_legacy::check(pt));
+  EXPECT_EQ(1u,
+            fptu_legacy::field_count(pt, field_filter_any, nullptr, nullptr));
   EXPECT_EQ(4u, pt->junk_bytes());
 
-  EXPECT_EQ(1, fptu::erase(pt, 0xB, fptu_uint16));
-  EXPECT_STREQ(nullptr, fptu::check(pt));
-  EXPECT_EQ(0u, fptu::field_count(pt, field_filter_any, nullptr, nullptr));
+  EXPECT_EQ(1, fptu_legacy::erase(pt, 0xB, fptu_uint16));
+  EXPECT_STREQ(nullptr, fptu_legacy::check(pt));
+  EXPECT_EQ(0u,
+            fptu_legacy::field_count(pt, field_filter_any, nullptr, nullptr));
   EXPECT_EQ(0u, pt->junk_bytes());
   EXPECT_EQ(pt->pivot_, pt->head_);
   EXPECT_EQ(pt->pivot_, pt->tail_);
 
   // insert a,b; then delete b,a
-  ASSERT_STREQ(nullptr, fptu::check(pt));
+  ASSERT_STREQ(nullptr, fptu_legacy::check(pt));
   EXPECT_EQ(FPTU_OK, fptu_insert_uint32(pt, 0xA, 0));
   EXPECT_EQ(FPTU_OK, fptu_insert_uint32(pt, 0xB, 0));
-  EXPECT_STREQ(nullptr, fptu::check(pt));
-  EXPECT_EQ(2u, fptu::field_count(pt, field_filter_any, nullptr, nullptr));
+  EXPECT_STREQ(nullptr, fptu_legacy::check(pt));
+  EXPECT_EQ(2u,
+            fptu_legacy::field_count(pt, field_filter_any, nullptr, nullptr));
 
-  EXPECT_EQ(1, fptu::erase(pt, 0xB, fptu_uint32));
-  EXPECT_STREQ(nullptr, fptu::check(pt));
-  EXPECT_EQ(1u, fptu::field_count(pt, field_filter_any, nullptr, nullptr));
+  EXPECT_EQ(1, fptu_legacy::erase(pt, 0xB, fptu_uint32));
+  EXPECT_STREQ(nullptr, fptu_legacy::check(pt));
+  EXPECT_EQ(1u,
+            fptu_legacy::field_count(pt, field_filter_any, nullptr, nullptr));
   EXPECT_EQ(0u, pt->junk_bytes());
 
-  EXPECT_EQ(1, fptu::erase(pt, 0xA, fptu_uint32));
-  EXPECT_STREQ(nullptr, fptu::check(pt));
-  EXPECT_EQ(0u, fptu::field_count(pt, field_filter_any, nullptr, nullptr));
+  EXPECT_EQ(1, fptu_legacy::erase(pt, 0xA, fptu_uint32));
+  EXPECT_STREQ(nullptr, fptu_legacy::check(pt));
+  EXPECT_EQ(0u,
+            fptu_legacy::field_count(pt, field_filter_any, nullptr, nullptr));
   EXPECT_EQ(0u, pt->junk_bytes());
   EXPECT_EQ(pt->pivot_, pt->head_);
   EXPECT_EQ(pt->pivot_, pt->tail_);
 
   // insert a,b; then delete a,b
-  ASSERT_STREQ(nullptr, fptu::check(pt));
+  ASSERT_STREQ(nullptr, fptu_legacy::check(pt));
   EXPECT_EQ(FPTU_OK, fptu_insert_uint32(pt, 0xA, 0));
   EXPECT_EQ(FPTU_OK, fptu_insert_uint32(pt, 0xB, 0));
-  EXPECT_STREQ(nullptr, fptu::check(pt));
-  EXPECT_EQ(2u, fptu::field_count(pt, field_filter_any, nullptr, nullptr));
+  EXPECT_STREQ(nullptr, fptu_legacy::check(pt));
+  EXPECT_EQ(2u,
+            fptu_legacy::field_count(pt, field_filter_any, nullptr, nullptr));
 
-  EXPECT_EQ(1, fptu::erase(pt, 0xA, fptu_uint32));
-  EXPECT_STREQ(nullptr, fptu::check(pt));
-  EXPECT_EQ(1u, fptu::field_count(pt, field_filter_any, nullptr, nullptr));
+  EXPECT_EQ(1, fptu_legacy::erase(pt, 0xA, fptu_uint32));
+  EXPECT_STREQ(nullptr, fptu_legacy::check(pt));
+  EXPECT_EQ(1u,
+            fptu_legacy::field_count(pt, field_filter_any, nullptr, nullptr));
   EXPECT_EQ(8u, pt->junk_bytes());
 
-  EXPECT_EQ(1, fptu::erase(pt, 0xB, fptu_uint32));
-  EXPECT_STREQ(nullptr, fptu::check(pt));
-  EXPECT_EQ(0u, fptu::field_count(pt, field_filter_any, nullptr, nullptr));
+  EXPECT_EQ(1, fptu_legacy::erase(pt, 0xB, fptu_uint32));
+  EXPECT_STREQ(nullptr, fptu_legacy::check(pt));
+  EXPECT_EQ(0u,
+            fptu_legacy::field_count(pt, field_filter_any, nullptr, nullptr));
   EXPECT_EQ(0u, pt->junk_bytes());
   EXPECT_EQ(pt->pivot_, pt->head_);
   EXPECT_EQ(pt->pivot_, pt->tail_);
 }
 
 TEST(Remove, Serie) {
-  char space[fptu::buffer_enough];
-  fptu_rw *pt = fptu_init(space, sizeof(space), fptu::max_fields);
+  char space[fptu_legacy::buffer_enough];
+  fptu_rw *pt = fptu_init(space, sizeof(space), fptu_legacy::max_fields);
   ASSERT_NE(nullptr, pt);
 
   for (unsigned n = 1; n < 11; ++n) {
-    ASSERT_STREQ(nullptr, fptu::check(pt));
+    ASSERT_STREQ(nullptr, fptu_legacy::check(pt));
     for (unsigned i = 0; i < n; ++i) {
       EXPECT_EQ(FPTU_OK, fptu_insert_uint16(pt, 0, uint16_t(i)));
       EXPECT_EQ(FPTU_OK, fptu_insert_uint32(pt, 0, uint16_t(i)));
       EXPECT_EQ(FPTU_OK, fptu_insert_uint32(pt, 1, uint16_t(i)));
       EXPECT_EQ(FPTU_OK, fptu_insert_uint16(pt, 1, uint16_t(i)));
     }
-    ASSERT_STREQ(nullptr, fptu::check(pt));
-    EXPECT_EQ(n * 4, fptu::field_count(pt, field_filter_any, nullptr, nullptr));
+    ASSERT_STREQ(nullptr, fptu_legacy::check(pt));
+    EXPECT_EQ(n * 4,
+              fptu_legacy::field_count(pt, field_filter_any, nullptr, nullptr));
 
-    EXPECT_EQ((int)n, fptu::erase(pt, 1, fptu_filter_mask(fptu_uint16)));
-    EXPECT_STREQ(nullptr, fptu::check(pt));
-    EXPECT_EQ(n * 3, fptu::field_count(pt, field_filter_any, nullptr, nullptr));
+    EXPECT_EQ((int)n,
+              fptu_legacy::erase(pt, 1, fptu_legacy::filter_mask(fptu_uint16)));
+    EXPECT_STREQ(nullptr, fptu_legacy::check(pt));
+    EXPECT_EQ(n * 3,
+              fptu_legacy::field_count(pt, field_filter_any, nullptr, nullptr));
 
-    EXPECT_EQ((int)n, fptu::erase(pt, 1, fptu_filter_mask(fptu_uint32)));
-    EXPECT_STREQ(nullptr, fptu::check(pt));
-    EXPECT_EQ(n * 2, fptu::field_count(pt, field_filter_any, nullptr, nullptr));
+    EXPECT_EQ((int)n,
+              fptu_legacy::erase(pt, 1, fptu_legacy::filter_mask(fptu_uint32)));
+    EXPECT_STREQ(nullptr, fptu_legacy::check(pt));
+    EXPECT_EQ(n * 2,
+              fptu_legacy::field_count(pt, field_filter_any, nullptr, nullptr));
 
     for (unsigned i = 0; i < n; ++i) {
-      EXPECT_EQ(1, fptu::erase(pt, 0, fptu_uint16));
-      EXPECT_STREQ(nullptr, fptu::check(pt));
-      EXPECT_EQ((n - i) * 2 - 1,
-                fptu::field_count(pt, field_filter_any, nullptr, nullptr));
+      EXPECT_EQ(1, fptu_legacy::erase(pt, 0, fptu_uint16));
+      EXPECT_STREQ(nullptr, fptu_legacy::check(pt));
+      EXPECT_EQ((n - i) * 2 - 1, fptu_legacy::field_count(pt, field_filter_any,
+                                                          nullptr, nullptr));
 
-      EXPECT_EQ(1, fptu::erase(pt, 0, fptu_uint32));
-      EXPECT_STREQ(nullptr, fptu::check(pt));
-      EXPECT_EQ((n - i) * 2 - 2,
-                fptu::field_count(pt, field_filter_any, nullptr, nullptr));
+      EXPECT_EQ(1, fptu_legacy::erase(pt, 0, fptu_uint32));
+      EXPECT_STREQ(nullptr, fptu_legacy::check(pt));
+      EXPECT_EQ((n - i) * 2 - 2, fptu_legacy::field_count(pt, field_filter_any,
+                                                          nullptr, nullptr));
     }
 
-    EXPECT_STREQ(nullptr, fptu::check(pt));
-    ASSERT_EQ(0u, fptu::field_count(pt, field_filter_any, nullptr, nullptr));
+    EXPECT_STREQ(nullptr, fptu_legacy::check(pt));
+    ASSERT_EQ(0u,
+              fptu_legacy::field_count(pt, field_filter_any, nullptr, nullptr));
     ASSERT_EQ(0u, fptu_junkspace(pt));
   }
 }
 
 TEST(Remove, Shuffle) {
-  char space[fptu::buffer_enough];
+  char space[fptu_legacy::buffer_enough];
 
   ASSERT_TRUE(shuffle6::selftest());
 
@@ -179,7 +199,7 @@ TEST(Remove, Shuffle) {
     unsigned create_mask = gray_code(create_iter);
 
     for (unsigned n = 0; n < shuffle6::factorial; ++n) {
-      fptu_rw *pt = fptu_init(space, sizeof(space), fptu::max_fields);
+      fptu_rw *pt = fptu_init(space, sizeof(space), fptu_legacy::max_fields);
       ASSERT_NE(nullptr, pt);
 
       SCOPED_TRACE("shuffle #" + std::to_string(n) + ", create-mask " +
@@ -205,10 +225,10 @@ TEST(Remove, Shuffle) {
         }
       }
 
-      ASSERT_STREQ(nullptr, fptu::check(pt));
+      ASSERT_STREQ(nullptr, fptu_legacy::check(pt));
       EXPECT_EQ(0u, fptu_junkspace(pt));
-      EXPECT_EQ(created_count,
-                fptu::field_count(pt, field_filter_any, nullptr, nullptr));
+      EXPECT_EQ(created_count, fptu_legacy::field_count(pt, field_filter_any,
+                                                        nullptr, nullptr));
 
       int removed_count = 0;
       shuffle6 order(n);
@@ -223,20 +243,21 @@ TEST(Remove, Shuffle) {
           ASSERT_TRUE(false);
           break;
         case 0:
-          EXPECT_EQ(present, fptu::erase(pt, i, fptu_uint16));
+          EXPECT_EQ(present, fptu_legacy::erase(pt, i, fptu_uint16));
           break;
         case 1:
-          EXPECT_EQ(present, fptu::erase(pt, i, fptu_uint32));
+          EXPECT_EQ(present, fptu_legacy::erase(pt, i, fptu_uint32));
           break;
         case 2:
-          EXPECT_EQ(present, fptu::erase(pt, i, fptu_uint64));
+          EXPECT_EQ(present, fptu_legacy::erase(pt, i, fptu_uint64));
           break;
         }
         removed_count += present;
 
-        ASSERT_STREQ(nullptr, fptu::check(pt));
-        ASSERT_EQ(created_count - removed_count,
-                  fptu::field_count(pt, field_filter_any, nullptr, nullptr));
+        ASSERT_STREQ(nullptr, fptu_legacy::check(pt));
+        ASSERT_EQ(
+            created_count - removed_count,
+            fptu_legacy::field_count(pt, field_filter_any, nullptr, nullptr));
       }
 
       ASSERT_EQ(0u, fptu_junkspace(pt));

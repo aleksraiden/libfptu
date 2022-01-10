@@ -172,53 +172,53 @@ TEST(Trivia, Apriory) {
 
 TEST(Trivia, ColType) {
   fptu_tag_t tag;
-  tag = fptu::make_tag(0, fptu_bool);
+  tag = fptu_legacy::make_tag(0, fptu_bool);
   /* fpu_tag_t is uint_fast 16_t, it can be 2, 4, or 8 bytes in size */
   ASSERT_EQ((sizeof(tag) == 2) ? 0x2000u : 0xFFFD2000u, tag);
-  EXPECT_EQ(0u, fptu::get_colnum(tag));
-  EXPECT_EQ(fptu_bool, fptu::get_type(tag));
+  EXPECT_EQ(0u, fptu_legacy::get_colnum(tag));
+  EXPECT_EQ(fptu_bool, fptu_legacy::get_type(tag));
 
-  tag = fptu::make_tag(42, fptu_int64);
+  tag = fptu_legacy::make_tag(42, fptu_int64);
   ASSERT_NE(0u, tag);
-  EXPECT_EQ(42u, fptu::get_colnum(tag));
-  EXPECT_EQ(fptu_int64, fptu::get_type(tag));
+  EXPECT_EQ(42u, fptu_legacy::get_colnum(tag));
+  EXPECT_EQ(fptu_int64, fptu_legacy::get_type(tag));
 }
 
 TEST(Trivia, cmp2int) {
-  EXPECT_EQ(0, fptu::cmp2int(41, 41));
-  EXPECT_EQ(1, fptu::cmp2int(42, 41));
-  EXPECT_EQ(-1, fptu::cmp2int(41, 42));
+  EXPECT_EQ(0, fptu_legacy::cmp2int(41, 41));
+  EXPECT_EQ(1, fptu_legacy::cmp2int(42, 41));
+  EXPECT_EQ(-1, fptu_legacy::cmp2int(41, 42));
 
-  EXPECT_EQ(0, fptu::cmp2int(-41, -41));
-  EXPECT_EQ(1, fptu::cmp2int(0, -41));
-  EXPECT_EQ(-1, fptu::cmp2int(-41, 0));
+  EXPECT_EQ(0, fptu_legacy::cmp2int(-41, -41));
+  EXPECT_EQ(1, fptu_legacy::cmp2int(0, -41));
+  EXPECT_EQ(-1, fptu_legacy::cmp2int(-41, 0));
 
-  EXPECT_EQ(1, fptu::cmp2int(42, -42));
-  EXPECT_EQ(-1, fptu::cmp2int(-42, 42));
+  EXPECT_EQ(1, fptu_legacy::cmp2int(42, -42));
+  EXPECT_EQ(-1, fptu_legacy::cmp2int(-42, 42));
 }
 
 TEST(Trivia, cmp2lge) {
-  EXPECT_EQ(fptu_eq, fptu::cmp2lge(41, 41));
-  EXPECT_EQ(fptu_gt, fptu::cmp2lge(42, 41));
-  EXPECT_EQ(fptu_lt, fptu::cmp2lge(41, 42));
+  EXPECT_EQ(fptu_eq, fptu_legacy::cmp2lge(41, 41));
+  EXPECT_EQ(fptu_gt, fptu_legacy::cmp2lge(42, 41));
+  EXPECT_EQ(fptu_lt, fptu_legacy::cmp2lge(41, 42));
 
-  EXPECT_EQ(fptu_eq, fptu::cmp2lge(-41, -41));
-  EXPECT_EQ(fptu_gt, fptu::cmp2lge(0, -41));
-  EXPECT_EQ(fptu_lt, fptu::cmp2lge(-41, 0));
+  EXPECT_EQ(fptu_eq, fptu_legacy::cmp2lge(-41, -41));
+  EXPECT_EQ(fptu_gt, fptu_legacy::cmp2lge(0, -41));
+  EXPECT_EQ(fptu_lt, fptu_legacy::cmp2lge(-41, 0));
 
-  EXPECT_EQ(fptu_gt, fptu::cmp2lge(42, -42));
-  EXPECT_EQ(fptu_lt, fptu::cmp2lge(-42, 42));
+  EXPECT_EQ(fptu_gt, fptu_legacy::cmp2lge(42, -42));
+  EXPECT_EQ(fptu_lt, fptu_legacy::cmp2lge(-42, 42));
 }
 
 TEST(Trivia, diff2lge) {
-  EXPECT_EQ(fptu_eq, fptu::diff2lge(0));
-  EXPECT_EQ(fptu_gt, fptu::diff2lge(1));
-  EXPECT_EQ(fptu_gt, fptu::diff2lge(INT_MAX));
-  EXPECT_EQ(fptu_gt, fptu::diff2lge(LONG_MAX));
-  EXPECT_EQ(fptu_gt, fptu::diff2lge(ULONG_MAX));
-  EXPECT_EQ(fptu_lt, fptu::diff2lge(-1));
-  EXPECT_EQ(fptu_lt, fptu::diff2lge(INT_MIN));
-  EXPECT_EQ(fptu_lt, fptu::diff2lge(LONG_MIN));
+  EXPECT_EQ(fptu_eq, fptu_legacy::diff2lge(0));
+  EXPECT_EQ(fptu_gt, fptu_legacy::diff2lge(1));
+  EXPECT_EQ(fptu_gt, fptu_legacy::diff2lge(INT_MAX));
+  EXPECT_EQ(fptu_gt, fptu_legacy::diff2lge(LONG_MAX));
+  EXPECT_EQ(fptu_gt, fptu_legacy::diff2lge(ULONG_MAX));
+  EXPECT_EQ(fptu_lt, fptu_legacy::diff2lge(-1));
+  EXPECT_EQ(fptu_lt, fptu_legacy::diff2lge(INT_MIN));
+  EXPECT_EQ(fptu_lt, fptu_legacy::diff2lge(LONG_MIN));
 }
 
 TEST(Trivia, iovec) {

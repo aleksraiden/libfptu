@@ -63,11 +63,11 @@ TEST(Init, Base) {
 
   fptu_rw *pt0 = fptu_init(space, fptu_rw::pure_tuple_size(), 0);
   ASSERT_NE(nullptr, pt0);
-  ASSERT_STREQ(nullptr, fptu::check(pt0));
+  ASSERT_STREQ(nullptr, fptu_legacy::check(pt0));
   ASSERT_EQ(0u, fptu_space4items(pt0));
   ASSERT_EQ(0u, fptu_space4data(pt0));
   ASSERT_EQ(0u, fptu_junkspace(pt0));
-  ASSERT_STREQ(nullptr, fptu::check(pt0));
+  ASSERT_STREQ(nullptr, fptu_legacy::check(pt0));
 
   static const size_t extra_space_cases[] = {
       /* clang-format off */

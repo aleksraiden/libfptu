@@ -252,7 +252,7 @@ enum fptu_type : unsigned {
   fptu_sha256 = fptu_256
 };
 
-enum fptu_filter {
+enum fptu_filter : uint32_t {
   fptu_flag_not_filter = UINT32_C(1) << 31,
   fptu_any = fptu::details::mask_all_types,
   fptu_any_int = fptu::details::mask_integer,
@@ -261,10 +261,6 @@ enum fptu_filter {
   fptu_any_number = fptu::details::mask_number
 };
 DEFINE_ENUM_FLAG_OPERATORS(fptu_filter)
-
-static cxx11_constexpr fptu_filter fptu_filter_mask(fptu_type type) {
-  return fptu_filter(UINT32_C(1) << fptu::details::tag2genus(type));
-}
 
 enum class fptu_type_or_filter : uint32_t {};
 using fptu_tag_t = uint_fast16_t;
@@ -275,6 +271,7 @@ FPTU_API uint_fast16_t fptu_make_tag(unsigned column,
                                      fptu_type type) cxx11_noexcept;
 FPTU_API bool fptu_tag_is_fixedsize(fptu_tag_t tag) cxx11_noexcept;
 FPTU_API bool fptu_tag_is_deleted(fptu_tag_t tag) cxx11_noexcept;
+FPTU_API size_t fptu_tag_value_fixedsize(fptu_tag_t tag) cxx11_noexcept;
 
 //------------------------------------------------------------------------------
 
@@ -805,7 +802,27 @@ FPTU_API const char *fptu_type_name(const fptu_type) cxx11_noexcept;
 //------------------------------------------------------------------------------
 /* Сервисные функции и классы для C++ */
 
-namespace fptu {
+namespace fptu_legacy {
+
+using namespace fptu;
+
+static cxx11_constexpr fptu_type genus2legacy(fptu::genus type,
+                                              unsigned colnum = 0) {
+  return fptu_type(fptu::details::make_tag(type, colnum, true, true, false));
+}
+
+static cxx11_constexpr fptu::details::tag_t legacy2tag(const fptu_tag_t tag) {
+  return fptu::details::make_tag(fptu::details::loose_genus_and_id_t(tag), true,
+                                 true, false);
+}
+
+static cxx11_constexpr fptu::genus type2genus(fptu_type type) {
+  return fptu::details::tag2genus(type);
+}
+
+static cxx11_constexpr fptu_filter filter_mask(fptu_type type) {
+  return fptu_filter(UINT32_C(1) << type2genus(type));
+}
 
 using tuple_ptr = tuple_rw_managed;
 
@@ -1201,7 +1218,7 @@ tuple2json(const fptu_ro &tuple, const string_view &indent, unsigned depth,
            fptu_value2enum_func value2enum,
            const fptu_json_options options = fptu_json_default);
 
-} // namespace fptu
+} // namespace fptu_legacy
 
 //------------------------------------------------------------------------------
 

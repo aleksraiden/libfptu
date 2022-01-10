@@ -69,8 +69,8 @@ static cxx11_constexpr bool match(const fptu_field *pf, unsigned column,
                                   fptu_type_or_filter type_or_filter) {
   CONSTEXPR_ASSERT(is_filter(type_or_filter));
   return !pf->is_hole() && pf->colnum() == column &&
-         (fptu_filter(type_or_filter) & fptu_filter_mask(pf->legacy_type())) !=
-             0;
+         (fptu_filter(type_or_filter) &
+          fptu_legacy::filter_mask(pf->legacy_type())) != 0;
 }
 
 __hot const fptu_field *
@@ -227,23 +227,31 @@ __cold const char *fptu_type_name(const fptu_type type) cxx11_noexcept {
 /* legacy C-compatible API */
 
 unsigned fptu_get_colnum(fptu_tag_t tag) cxx11_noexcept {
-  return fptu::get_colnum(tag);
+  return fptu_legacy::get_colnum(tag);
 }
 
 fptu_type fptu_get_type(fptu_tag_t tag) cxx11_noexcept {
-  return fptu::get_type(tag);
+  return fptu_legacy::get_type(tag);
 }
 
 uint_fast16_t fptu_make_tag(unsigned column, fptu_type type) cxx11_noexcept {
-  return fptu::make_tag(column, type);
+  return fptu_legacy::make_tag(column, type);
 }
 
 bool fptu_tag_is_fixedsize(fptu_tag_t tag) cxx11_noexcept {
-  return fptu::tag_is_fixedsize(tag);
+  return fptu_legacy::tag_is_fixedsize(tag);
+}
+
+size_t fptu_tag_value_fixedsize(fptu_tag_t tag) cxx11_noexcept {
+  return fptu_legacy::tag_value_fixedsize(tag);
+}
+
+size_t fptu_value_fixedsize(fptu_type type) cxx11_noexcept {
+  return fptu_legacy::value_fixed_size(type);
 }
 
 bool fptu_tag_is_deleted(fptu_tag_t tag) cxx11_noexcept {
-  return fptu::tag_is_dead(tag);
+  return fptu_legacy::tag_is_dead(tag);
 }
 
 fptu_lge __hot fptu_cmp_binary(const void *left_data, std::size_t left_len,
@@ -251,8 +259,8 @@ fptu_lge __hot fptu_cmp_binary(const void *left_data, std::size_t left_len,
                                std::size_t right_len) cxx11_noexcept {
   int diff = std::memcmp(left_data, right_data, std::min(left_len, right_len));
   if (diff == 0)
-    diff = fptu::cmp2int(left_len, right_len);
-  return fptu::diff2lge(diff);
+    diff = fptu_legacy::cmp2int(left_len, right_len);
+  return fptu_legacy::diff2lge(diff);
 }
 
 const float fptu_fp32_denil_value =

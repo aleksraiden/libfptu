@@ -124,7 +124,7 @@ FPTU_GET_IMPL(256)
 
 const char *fptu_get_cstr(fptu_ro ro, unsigned column,
                           int *error) cxx11_noexcept {
-  const fptu_field *pf = fptu::lookup(ro, column, fptu_cstr);
+  const fptu_field *pf = fptu_legacy::lookup(ro, column, fptu_cstr);
   if (pf)
     return fptu_field_cstr(pf);
   fptu_set_error(FPTU_ENOFIELD, "fptu: no such field");
@@ -140,10 +140,10 @@ const char *fptu_get_cstr(fptu_ro ro, unsigned column,
       cxx11_noexcept {                                                         \
     if (unlikely(value == nullptr))                                            \
       return fptu_ic;                                                          \
-    const fptu_field *pf = fptu::lookup(ro, column, fptu_##BITS);              \
+    const fptu_field *pf = fptu_legacy::lookup(ro, column, fptu_##BITS);       \
     if (unlikely(pf == nullptr))                                               \
       return fptu_ic;                                                          \
-    return fptu::cmpbin(pf->relative.payload()->flat, value, BITS / 8);        \
+    return fptu_legacy::cmpbin(pf->relative.payload()->flat, value, BITS / 8); \
   }
 
 FPTU_GET_IMPL(96)
@@ -154,7 +154,7 @@ FPTU_GET_IMPL(256)
 
 fptu_lge fptu_cmp_opaque(fptu_ro ro, unsigned column, const void *value,
                          std::size_t bytes) cxx11_noexcept {
-  const fptu_field *pf = fptu::lookup(ro, column, fptu_opaque);
+  const fptu_field *pf = fptu_legacy::lookup(ro, column, fptu_opaque);
   if (pf == nullptr)
     return bytes ? fptu_ic : fptu_eq;
 
