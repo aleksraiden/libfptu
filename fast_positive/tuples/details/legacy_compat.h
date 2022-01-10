@@ -123,6 +123,11 @@ inline bool tag_is_fixedsize(fptu_tag_t tag) {
   return fptu::details::is_fixed_size(tag);
 }
 
+inline size_t tag_value_fixedsize(fptu_tag_t tag) {
+  const fptu::genus type = fptu::details::tag2genus(tag);
+  return fptu::value_fixed_size(type);
+}
+
 inline bool tag_is_dead(fptu_tag_t tag) {
   return fptu::details::tag2genus(tag) == fptu::genus::hole;
 }

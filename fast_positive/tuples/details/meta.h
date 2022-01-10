@@ -841,6 +841,15 @@ static inline void preplaced_erase(const genus type,
                                    \ for dll-interface class */
 #endif
 
+cxx14_constexpr bool value_fixed_size(const genus type) cxx11_noexcept {
+  return details::preplaced_bytes(type);
+}
+
+cxx14_constexpr bool value_fixed_size(const details::tag_t tag) cxx11_noexcept {
+  return CONSTEXPR_ASSERT(details::is_fixed_size(tag)),
+         value_fixed_size(details::tag2genus(tag));
+}
+
 class FPTU_API_TYPE preplaced_string
     : public details::preplaced_stretchy_value {
 public:
