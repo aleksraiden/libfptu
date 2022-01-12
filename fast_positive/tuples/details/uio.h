@@ -38,43 +38,45 @@ struct iovec {
 namespace fptu {
 
 struct FPTU_API_TYPE iovec : public ::iovec {
-  iovec() {
+  cxx11_constexpr iovec() {
     iov_base = nullptr;
     iov_len = 0;
   }
 
-  iovec(const void *data, std::size_t size) {
+  cxx11_constexpr iovec(const void *data, std::size_t size) {
     iov_base = const_cast<void *>(data);
     iov_len = size;
   }
 
-  iovec(const ::iovec &io) {
+  cxx11_constexpr iovec(const ::iovec &io) {
     iov_base = io.iov_base;
     iov_len = io.iov_len;
   }
 
-  iovec &operator=(const ::iovec &io) {
+  cxx14_constexpr iovec &operator=(const ::iovec &io) {
     iov_base = io.iov_base;
     iov_len = io.iov_len;
     return *this;
   }
 
-  void set(const void *data, std::size_t size) {
+  cxx14_constexpr void set(const void *data, std::size_t size) {
     iov_base = const_cast<void *>(data);
     iov_len = size;
   }
 
-  std::size_t size() const { return iov_len; }
-  const uint8_t *data() const { return static_cast<const uint8_t *>(iov_base); }
-  const uint8_t *end() const { return data() + size(); }
-  uint8_t *data() { return static_cast<uint8_t *>(iov_base); }
-  uint8_t *end() { return data() + size(); }
+  cxx11_constexpr std::size_t size() const { return iov_len; }
+  cxx11_constexpr const uint8_t *data() const {
+    return static_cast<const uint8_t *>(iov_base);
+  }
+  cxx11_constexpr const uint8_t *end() const { return data() + size(); }
+  cxx11_constexpr uint8_t *data() { return static_cast<uint8_t *>(iov_base); }
+  cxx11_constexpr uint8_t *end() { return data() + size(); }
 
-  bool equal(const ::iovec &io) const {
+  cxx11_constexpr bool equal(const ::iovec &io) const {
     return this->iov_base == io.iov_base && this->iov_len == io.iov_len;
   }
 
-  bool not_equal(const ::iovec &io) const { return !equal(io); }
+  cxx11_constexpr bool not_equal(const ::iovec &io) const { return !equal(io); }
 };
 } // namespace fptu
 

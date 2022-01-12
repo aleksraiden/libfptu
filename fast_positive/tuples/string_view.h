@@ -156,13 +156,13 @@ public:
   reverse_iterator rend() const { return crend(); }
 
   cxx11_constexpr const char *data() const { return str; }
-  cxx11_constexpr std::size_t length() const {
-    return (len >= 0) ? (size_t)len : 0u;
+  cxx11_constexpr std::size_t length() const noexcept {
+    return likely(len >= 0) ? size_t(len) : 0u;
   }
-  cxx11_constexpr bool empty() const { return len <= 0; }
-  cxx11_constexpr bool nil() const { return len < 0; }
-  cxx11_constexpr std::size_t size() const { return length(); }
-  cxx11_constexpr size_type max_size() const { return 32767; }
+  cxx11_constexpr bool empty() const noexcept { return len <= 0; }
+  cxx11_constexpr bool nil() const noexcept { return len < 0; }
+  cxx11_constexpr std::size_t size() const noexcept { return length(); }
+  cxx11_constexpr size_type max_size() const noexcept { return 32767; }
 
   cxx14_constexpr size_t hash_value() const {
     /* TODO: replace by t1ha_v3 */

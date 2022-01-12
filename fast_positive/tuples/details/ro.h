@@ -619,7 +619,7 @@ public:
   friend FPTU_API std::ostream &operator<<(std::ostream &, const tuple_ro *);
 };
 
-inline iovec_thunk::iovec_thunk(const tuple_ro *ro)
+cxx11_constexpr iovec_thunk::iovec_thunk(const tuple_ro *ro) noexcept
     : iovec(ro, ro ? ro->size() : 0) {}
 
 } // namespace details

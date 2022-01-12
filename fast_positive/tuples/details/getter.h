@@ -47,19 +47,21 @@ class tuple_rw;
 
 struct iovec_thunk : public iovec {
   iovec_thunk() = default;
-  iovec_thunk(const void *data, std::size_t size) : iovec(data, size) {}
-  iovec_thunk(const string_view &view) : iovec(view.data(), view.size()) {}
-  iovec_thunk(const stretchy_value_tuple *nested)
+  cxx11_constexpr iovec_thunk(const void *data, std::size_t size) noexcept
+      : iovec(data, size) {}
+  cxx11_constexpr iovec_thunk(const string_view &view) noexcept
+      : iovec(view.data(), view.size()) {}
+  cxx11_constexpr iovec_thunk(const stretchy_value_tuple *nested) noexcept
       : iovec(nested, nested ? nested->length() : 0) {}
 
-  operator const uint8_t *() const {
+  cxx11_constexpr operator const uint8_t *() const noexcept {
     return static_cast<const uint8_t *>(iov_base);
   }
-  operator string_view() const {
+  cxx11_constexpr operator string_view() const noexcept {
     return string_view(static_cast<const char *>(iov_base), iov_len);
   }
 
-  inline iovec_thunk(const tuple_ro *ro);
+  cxx11_constexpr iovec_thunk(const tuple_ro *ro) noexcept;
 };
 
 template <genus GENUS, typename erthink::enable_if_t<
