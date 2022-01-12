@@ -19,7 +19,6 @@
 #include "fast_positive/tuples/api.h"
 #include "fast_positive/tuples/details/exceptions.h"
 #include "fast_positive/tuples/details/field.h"
-#include "fast_positive/tuples/details/legacy_common.h"
 #include "fast_positive/tuples/details/meta.h"
 #include "fast_positive/tuples/details/scan.h"
 #include "fast_positive/tuples/essentials.h"
@@ -61,13 +60,6 @@ struct iovec_thunk : public iovec {
   }
 
   inline iovec_thunk(const tuple_ro *ro);
-
-  iovec_thunk(const fptu_ro &ro) : iovec(ro.sys) {}
-  operator fptu_ro() const {
-    fptu_ro result;
-    result.sys = *this;
-    return result;
-  }
 };
 
 template <genus GENUS, typename erthink::enable_if_t<

@@ -94,6 +94,55 @@
 
 //------------------------------------------------------------------------------
 
+/* Внутренний тип соответствующий 32-битной ячейке с данными. */
+union fptu_unit;
+
+/* Поле кортежа.
+ *
+ * Фактически это дескриптор поля, в котором записаны: тип данных,
+ * номер колонки и смещение к данным. */
+struct fptu_field;
+
+/* Изменяемая форма кортежа.
+ * Является плоским буфером, в начале которого расположены служебные поля.
+ *
+ * Инициализируется функциями fptu_init(), fptu_alloc() и fptu_fetch(). */
+struct fptu_rw;
+
+/* Представление сериализованной формы кортежа.
+ *
+ * Фактические это просто системная структура iovec, т.е. указатель
+ * на буфер с данными и размер этих данных в байтах. Системный тип struct
+ * iovec выбран для совместимости с функциями readv(), writev() и т.п.
+ * Другими словами, это просто "оболочка", а сами данные кортежа должны быть
+ * где-то размещены. */
+union fptu_ro {
+  struct {
+    const fptu_unit *units;
+    size_t total_bytes;
+  };
+  struct iovec sys;
+
+#ifdef __cplusplus
+  fptu_ro() noexcept = default;
+  cxx11_constexpr fptu_ro(const fptu_ro &) = default;
+  cxx11_constexpr fptu_ro(const void *data, size_t bytes) noexcept
+      : units(static_cast<const fptu_unit *>(data)), total_bytes(bytes) {
+    static_assert(sizeof(sys.iov_len) == sizeof(total_bytes), "WTF?");
+    CONSTEXPR_ASSERT(total_bytes == size_t(sys.iov_len) &&
+                     units == sys.iov_base);
+  }
+  cxx11_constexpr fptu_ro(const iovec &sys) noexcept
+      : fptu_ro(sys.iov_base, sys.iov_len) {}
+  cxx14_constexpr fptu_ro &operator=(const fptu_ro &) = default;
+  cxx11_constexpr operator iovec() const noexcept {
+    return CONSTEXPR_ASSERT(total_bytes == size_t(sys.iov_len) &&
+                            units == sys.iov_base),
+           sys;
+  }
+#endif /* __cplusplus */
+};
+
 #ifdef __cplusplus
 extern "C" {
 #else
@@ -133,30 +182,6 @@ enum fptu_error {
 FPTU_API void fptu_clear_error() /* thread safe */;
 FPTU_API fptu_error fptu_last_error_code() /* thread safe */;
 FPTU_API const char *fptu_last_error_msg() /* thread safe */;
-
-/* Внутренний тип соответствующий 32-битной ячейке с данными. */
-union fptu_unit;
-
-/* Поле кортежа.
- *
- * Фактически это дескриптор поля, в котором записаны: тип данных,
- * номер колонки и смещение к данным. */
-struct fptu_field;
-
-/* Представление сериализованной формы кортежа.
- *
- * Фактические это просто системная структура iovec, т.е. указатель
- * на буфер с данными и размер этих данных в байтах. Системный тип struct
- * iovec выбран для совместимости с функциями readv(), writev() и т.п.
- * Другими словами, это просто "оболочка", а сами данные кортежа должны быть
- * где-то размещены. */
-union fptu_ro;
-
-/* Изменяемая форма кортежа.
- * Является плоским буфером, в начале которого расположены служебные поля.
- *
- * Инициализируется функциями fptu_init(), fptu_alloc() и fptu_fetch(). */
-struct fptu_rw;
 
 /* Основные ограничения и константы. */
 enum fptu_bits {

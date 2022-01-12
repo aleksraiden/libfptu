@@ -50,7 +50,6 @@
 #include "fast_positive/tuples/details/exceptions.h"
 #include "fast_positive/tuples/details/field.h"
 #include "fast_positive/tuples/details/getter.h"
-#include "fast_positive/tuples/details/legacy_common.h"
 #include "fast_positive/tuples/details/ro.h"
 #include "fast_positive/tuples/details/rw.h"
 #include "fast_positive/tuples/details/tagged_pointer.h"

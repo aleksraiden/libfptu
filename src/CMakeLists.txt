@@ -106,7 +106,6 @@ set(LIBFPTU_HEADERS
   tuples/details/exceptions.h
   tuples/details/field.h
   tuples/details/getter.h
-  tuples/details/legacy_common.h
   tuples/details/legacy_compat.h
   tuples/details/meta.h
   tuples/details/ro.h
