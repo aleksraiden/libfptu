@@ -80,31 +80,31 @@
 
 #ifndef __has_attribute
 #define __has_attribute(x) (0)
-#endif
+#endif /* __has_attribute */
+
+#ifndef __has_cpp_attribute
+#define __has_cpp_attribute(x) 0
+#endif /* __has_cpp_attribute */
 
 #ifndef __has_feature
 #define __has_feature(x) (0)
-#endif
+#endif /* __has_feature */
 
 #ifndef __has_extension
 #define __has_extension(x) (0)
-#endif
+#endif /* __has_extension */
 
 #ifndef __has_builtin
 #define __has_builtin(x) (0)
-#endif
+#endif /* __has_builtin */
 
 #ifndef __has_warning
 #define __has_warning(x) (0)
-#endif
+#endif /* __has_warning */
 
 #ifndef __has_include
 #define __has_include(x) (0)
-#endif
-
-#ifndef __has_cpp_attribute
-#define __has_cpp_attribute(x) (0)
-#endif
+#endif /* __has_include */
 
 #if __has_feature(thread_sanitizer)
 #define __SANITIZE_THREAD__ 1
@@ -120,7 +120,7 @@
 
 #if defined(__cplusplus) && __has_include(<version>)
 #include <version>
-#endif
+#endif /* <version> */
 
 //------------------------------------------------------------------------------
 
@@ -673,14 +673,41 @@ static __inline void __noop_consume_args(void *anchor, ...) { (void)anchor; }
 #endif
 #endif /* unlikely */
 
+#ifndef constexpr_likely
 #if defined(__cplusplus) && __cplusplus >= 201103L && defined(__LCC__) &&      \
     __LCC__ < 125
 #define constexpr_likely(cond) (cond)
-#define constexpr_unlikely(cond) (cond)
 #else
 #define constexpr_likely(cond) likely(cond)
+#endif
+#endif /* constexpr_likely */
+
+#ifndef constexpr_unlikely
+#if defined(__cplusplus) && __cplusplus >= 201103L && defined(__LCC__) &&      \
+    __LCC__ < 125
+#define constexpr_unlikely(cond) (cond)
+#else
 #define constexpr_unlikely(cond) unlikely(cond)
 #endif
+#endif /* constexpr_unlikely */
+
+#ifndef __cxx20_likely
+#if defined(DOXYGEN) || (__has_cpp_attribute(likely) >= 201803L &&             \
+                         (!defined(__GNUC__) || __GNUC__ > 9))
+#define __cxx20_likely [[likely]]
+#else
+#define __cxx20_likely
+#endif
+#endif /* __cxx20_likely */
+
+#ifndef __cxx20_unlikely
+#if defined(DOXYGEN) || (__has_cpp_attribute(unlikely) >= 201803L &&           \
+                         (!defined(__GNUC__) || __GNUC__ > 9))
+#define __cxx20_unlikely [[unlikely]]
+#else
+#define __cxx20_unlikely
+#endif
+#endif /* __cxx20_unlikely */
 
 #if !defined(alignas) && (!defined(__cplusplus) || __cplusplus < 201103L)
 #if defined(__GNUC__) || defined(__clang__) || __has_attribute(__aligned__)
