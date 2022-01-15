@@ -60,9 +60,11 @@
 #define PRIxSIZE PRIxPTR
 #endif /* PRI*SIZE macros */
 
-/*----------------------------------------------------------------------------*/
-/* LY: temporary workaround for Elbrus's memcmp() bug. */
-#if defined(__e2k__) && !__GLIBC_PREREQ(2, 24)
+/*------------------------------------------------------------------------------
+ * Workaround for mmaped-lookahead-cross-page-boundary bug
+ * in an obsolete versions of Elbrus's libc and kernels. */
+#if defined(__e2k__) && defined(MDBX_E2K_MLHCPB_WORKAROUND) &&                 \
+    MDBX_E2K_MLHCPB_WORKAROUND
 __extern_C int mdbx_e2k_memcmp_bug_workaround(const void *s1, const void *s2,
                                               size_t n);
 __extern_C int mdbx_e2k_strcmp_bug_workaround(const char *s1, const char *s2);
@@ -107,4 +109,4 @@ inline size_t mdbx_e2k_strnlen_bug_workaround(const char *s, size_t maxlen) {
 #define strlen mdbx_e2k_strlen_bug_workaround
 #undef strnlen
 #define strnlen mdbx_e2k_strnlen_bug_workaround
-#endif /* Elbrus's memcmp() bug. */
+#endif /* MDBX_E2K_MLHCPB_WORKAROUND */
