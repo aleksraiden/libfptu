@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 1994-2021 Leonid Yuriev <leo@yuriev.ru>.
+ *  Copyright (c) 1994-2022 Leonid Yuriev <leo@yuriev.ru>.
  *  https://github.com/erthink/erthink
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
@@ -24,7 +24,7 @@
 #include "erthink_defs.h"
 #include "erthink_dynamic_constexpr.h++"
 
-#include <cstring> // for std::strlen, str:memcmp
+#include <cstring> // for std::strlen, std::memcmp, std::memcpy
 
 #if defined(__cpp_lib_string_view) && __cpp_lib_string_view >= 201606L
 #include <string_view>

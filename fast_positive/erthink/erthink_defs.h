@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 1994-2021 Leonid Yuriev <leo@yuriev.ru>.
+ *  Copyright (c) 1994-2022 Leonid Yuriev <leo@yuriev.ru>.
  *  https://github.com/erthink/erthink
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
@@ -30,6 +30,13 @@
                                    mode specified; termination on exception    \
                                    is not guaranteed. Specify /EHsc */
 #endif
+
+/* Workaround for modern libstdc++ with CLANG < 4.x */
+#if defined(__SIZEOF_INT128__) && !defined(__GLIBCXX_TYPE_INT_N_0) &&          \
+    defined(__clang__) && __clang_major__ < 4
+#define __GLIBCXX_BITSIZE_INT_N_0 128
+#define __GLIBCXX_TYPE_INT_N_0 __int128
+#endif /* Workaround for modern libstdc++ with CLANG < 4.x */
 
 #if defined(__KERNEL__) || !defined(__cplusplus) || __cplusplus < 201103L
 #include <assert.h>
@@ -274,7 +281,9 @@
 #define cxx20_constexpr __inline
 #define cxx20_constexpr_var const
 #elif defined(DOXYGEN) ||                                                      \
-    (defined(__cpp_constexpr) && __cpp_constexpr >= 201907L)
+    (defined(__cpp_constexpr) && __cpp_constexpr >= 201907L &&                 \
+     defined(__cpp_lib_constexpr_string) &&                                    \
+     __cpp_lib_constexpr_string >= 201907L)
 #define cxx20_constexpr constexpr
 #define cxx20_constexpr_var constexpr
 #else
