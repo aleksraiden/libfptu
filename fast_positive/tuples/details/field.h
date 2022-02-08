@@ -105,6 +105,9 @@ union stretchy_value_string {
   cxx11_constexpr const char *end() const cxx11_noexcept {
     return begin() + length();
   }
+  cxx11_constexpr string_view read() const {
+    return string_view(begin(), length());
+  }
 
   stretchy_value_string() = delete;
   ~stretchy_value_string() = delete;
@@ -146,12 +149,18 @@ union stretchy_value_varbin {
     assert(brutto_units == estimate_space(value));
   }
 
-  cxx11_constexpr const void *begin() const cxx11_noexcept {
+  cxx11_constexpr const char *char_ptr() const cxx11_noexcept {
     static_assert(sizeof(*this) == sizeof(unit_t), "Oops");
     return erthink::constexpr_pointer_cast<const char *>(this) + sizeof(*this);
   }
+  cxx11_constexpr const void *begin() const cxx11_noexcept {
+    return char_ptr();
+  }
   cxx14_constexpr const void *end() const cxx11_noexcept {
     return static_cast<const char *>(begin()) + length();
+  }
+  cxx11_constexpr string_view read() const {
+    return string_view(char_ptr(), length());
   }
 
   stretchy_value_varbin() = delete;
@@ -246,6 +255,10 @@ struct FPTU_API_TYPE stretchy_value_tuple {
     CONSTEXPR_ASSERT(result >= 0 &&
                      size_t(result) == units2bytes(payload_units()));
     return result;
+  }
+
+  cxx11_constexpr string_view read() const {
+    return string_view(begin_data_bytes(), payload_bytes());
   }
 
   stretchy_value_tuple() = delete;

@@ -24,7 +24,7 @@ bool fptu_field_is_dead(const fptu_field *pf) cxx11_noexcept {
 }
 
 fptu_type fptu_field_type(const fptu_field *pf) cxx11_noexcept {
-  return pf ? pf->legacy_type() : fptu_null;
+  return pf ? pf->type() : fptu_null;
 }
 int fptu_field_column(const fptu_field *pf) cxx11_noexcept {
   return pf ? pf->colnum() : -1;
@@ -39,17 +39,17 @@ void fptu_erase_field(fptu_rw *pt, fptu_field *pf) cxx11_noexcept {
 
 struct iovec fptu_field_as_iovec(const fptu_field *pf) cxx11_noexcept {
   if (likely(pf)) {
-    const auto type = pf->type();
-    if (fptu::details::is_inplaced(type))
-      return fptu::iovec(&pf->inplaced, fptu::details::loose_units(type));
+    const auto genus = pf->genus();
+    if (fptu::details::is_inplaced(genus))
+      return fptu::iovec(&pf->inplaced, fptu::details::loose_units(genus));
 
-    if (fptu::details::is_fixed_size(type))
+    if (fptu::details::is_fixed_size(genus))
       return fptu::iovec(pf->relative.payload(),
-                         fptu::details::loose_units(type));
+                         fptu::details::loose_units(genus));
 
     if (pf->relative.have_payload())
       return fptu::iovec(pf->relative.payload(),
-                         pf->relative.payload()->stretchy.length(type));
+                         pf->relative.payload()->stretchy.length(genus));
   }
   return fptu::iovec(nullptr, 0);
 }

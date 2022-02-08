@@ -87,7 +87,7 @@ TEST(Fetch, Base) {
   EXPECT_STREQ(nullptr, fptu_legacy::check(origin_pt));
   origin_ro = fptu_take_noshrink(origin_pt);
   ASSERT_STREQ(nullptr, fptu_legacy::check(origin_ro));
-  EXPECT_EQ(size_t(fptu_legacy::unit_size), origin_ro.total_bytes);
+  EXPECT_EQ(size_t(fptu::unit_size), origin_ro.total_bytes);
 
   // check empty without more-items
   fetched_pt = fptu_fetch(origin_ro, fetched_space, sizeof(fetched_space), 0);
@@ -124,7 +124,7 @@ TEST(Fetch, Base) {
   ASSERT_STREQ(nullptr, fptu_legacy::check(origin_pt));
   origin_ro = fptu_take_noshrink(origin_pt);
   ASSERT_STREQ(nullptr, fptu_legacy::check(origin_ro));
-  EXPECT_EQ(size_t(fptu_legacy::unit_size * 2), origin_ro.total_bytes);
+  EXPECT_EQ(size_t(fptu::unit_size * 2), origin_ro.total_bytes);
 
   // check with max-more-items
   fetched_pt = fptu_fetch(origin_ro, fetched_space, sizeof(fetched_space),
@@ -166,7 +166,7 @@ TEST(Fetch, Base) {
   ASSERT_STREQ(nullptr, fptu_legacy::check(origin_pt));
   origin_ro = fptu_take_noshrink(origin_pt);
   ASSERT_STREQ(nullptr, fptu_legacy::check(origin_ro));
-  EXPECT_EQ(size_t(fptu_legacy::unit_size * 3), origin_ro.total_bytes);
+  EXPECT_EQ(size_t(fptu::unit_size * 3), origin_ro.total_bytes);
 
   // check with max-more-items
   fetched_pt = fptu_fetch(origin_ro, fetched_space, sizeof(fetched_space),
@@ -233,15 +233,14 @@ TEST(Fetch, Variate) {
       EXPECT_STREQ(nullptr, fptu_legacy::check(origin_pt));
       origin_ro = fptu_take_noshrink(origin_pt);
       ASSERT_STREQ(nullptr, fptu_legacy::check(origin_ro));
-      EXPECT_EQ(size_t(fptu_legacy::unit_size), origin_ro.total_bytes);
+      EXPECT_EQ(size_t(fptu::unit_size), origin_ro.total_bytes);
 
       // check empty
       size_t origin_items =
           (size_t)(fptu_end_ro(origin_ro) - fptu_begin_ro(origin_ro));
-      size_t origin_payload_bytes =
-          origin_ro.total_bytes -
-          fptu_legacy::details::units2bytes(origin_items) -
-          fptu_legacy::unit_size;
+      size_t origin_payload_bytes = origin_ro.total_bytes -
+                                    fptu::details::units2bytes(origin_items) -
+                                    fptu::unit_size;
       SCOPED_TRACE(
           "origin.items " + std::to_string(origin_items) +
           ", origin.payload_bytes " + std::to_string(origin_payload_bytes) +
@@ -290,14 +289,14 @@ TEST(Fetch, Variate) {
         ASSERT_STREQ(nullptr, fptu_legacy::check(origin_pt));
         origin_ro = fptu_take_noshrink(origin_pt);
         ASSERT_STREQ(nullptr, fptu_legacy::check(origin_ro));
-        EXPECT_EQ(size_t(fptu_legacy::unit_size * (n + 1)),
+        EXPECT_EQ(size_t(fptu::unit_size * (n + 1)),
                   origin_ro.total_bytes);
 
         origin_items =
             (size_t)(fptu_end_ro(origin_ro) - fptu_begin_ro(origin_ro));
         origin_payload_bytes = origin_ro.total_bytes -
-                               fptu_legacy::details::units2bytes(origin_items) -
-                               fptu_legacy::unit_size;
+                               fptu::details::units2bytes(origin_items) -
+                               fptu::unit_size;
         SCOPED_TRACE("origin.items " + std::to_string(origin_items) +
                      ", origin.payload_bytes " +
                      std::to_string(origin_payload_bytes) + ", fetch.space " +
@@ -349,14 +348,14 @@ TEST(Fetch, Variate) {
         ASSERT_STREQ(nullptr, fptu_legacy::check(origin_pt));
         origin_ro = fptu_take_noshrink(origin_pt);
         ASSERT_STREQ(nullptr, fptu_legacy::check(origin_ro));
-        EXPECT_EQ(size_t(fptu_legacy::unit_size * (n + n + 1)),
+        EXPECT_EQ(size_t(fptu::unit_size * (n + n + 1)),
                   origin_ro.total_bytes);
 
         origin_items =
             (size_t)(fptu_end_ro(origin_ro) - fptu_begin_ro(origin_ro));
         origin_payload_bytes = origin_ro.total_bytes -
-                               fptu_legacy::details::units2bytes(origin_items) -
-                               fptu_legacy::unit_size;
+                               fptu::details::units2bytes(origin_items) -
+                               fptu::unit_size;
         SCOPED_TRACE("origin.items " + std::to_string(origin_items) +
                      ", origin.payload_bytes " +
                      std::to_string(origin_payload_bytes) + ", fetch.space " +

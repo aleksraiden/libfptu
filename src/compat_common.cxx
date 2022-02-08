@@ -69,8 +69,8 @@ static cxx11_constexpr bool match(const fptu_field *pf, unsigned column,
                                   fptu_type_or_filter type_or_filter) {
   CONSTEXPR_ASSERT(is_filter(type_or_filter));
   return !pf->is_hole() && pf->colnum() == column &&
-         (fptu_filter(type_or_filter) &
-          fptu_legacy::filter_mask(pf->legacy_type())) != 0;
+         (fptu_filter(type_or_filter) & fptu_legacy::filter_mask(pf->type())) !=
+             0;
 }
 
 __hot const fptu_field *
@@ -183,9 +183,15 @@ int fptu_erase(fptu_rw *pt, unsigned column,
 
 //------------------------------------------------------------------------------
 
+static __cold std::ostream &invalid(std::ostream &out, const char *name,
+                                    const intptr_t value) {
+  return out << "invalid(fptu::" << name << "=" << value << ")";
+}
+
 __cold const char *fptu_type_name(const fptu_type type) cxx11_noexcept {
   switch (fptu::details::tag_t(/* hush 'not in enumerated' */ type)) {
   default: {
+    // return invalid(out, "type", value);
     static __thread char buf[32];
     snprintf(buf, sizeof(buf), "invalid(fptu_type)%i", (int)type);
     return buf;
@@ -220,6 +226,27 @@ __cold const char *fptu_type_name(const fptu_type type) cxx11_noexcept {
     return "opaque";
   case fptu_nested:
     return "nested";
+  }
+}
+
+__cold std::ostream &operator<<(std::ostream &out, const fptu_lge value) {
+  switch (value) {
+  default:
+    return invalid(out, "lge", value);
+  case fptu_ic:
+    return out << "><";
+  case fptu_eq:
+    return out << "==";
+  case fptu_lt:
+    return out << "<";
+  case fptu_gt:
+    return out << ">";
+  case fptu_ne:
+    return out << "!=";
+  case fptu_le:
+    return out << "<=";
+  case fptu_ge:
+    return out << ">=";
   }
 }
 

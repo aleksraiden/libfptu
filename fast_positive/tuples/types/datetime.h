@@ -275,6 +275,8 @@ public:
   }
 };
 
+FPTU_API std::ostream &operator<<(std::ostream &out, const datetime_t &value);
+
 } // namespace fptu
 
 /* Casting workaround for bogus EDG frontend */

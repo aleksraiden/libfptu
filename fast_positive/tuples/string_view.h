@@ -16,6 +16,7 @@
  */
 
 #pragma once
+#include "fast_positive/erthink/erthink_constexpr_cstr.h++"
 #include "fast_positive/erthink/erthink_defs.h"
 #include "fast_positive/tuples/api.h"
 
@@ -37,7 +38,6 @@
 namespace fptu {
 
 /* Минималистичное подобие std::string_view из C++17, но с отличиями:
- *  - более быстрое СРАВНЕНИЕ С ДРУГОЙ СЕМАНТИКОЙ, сначала учитывается длина!
  *  - отсутствуют сервисные методы: remove_prefix, remove_suffix, substr, copy,
  *    starts_with, ends_with, find, rfind, find_first_of, find_last_of,
  *    find_first_not_of, find_last_not_of, operator<<(std::ostream). */
@@ -69,16 +69,15 @@ public:
   }
 
   cxx11_constexpr string_view(const char *ptr)
-      : str(ptr), len(ptr ? static_cast<intptr_t>(strlen(ptr)) : -1) {
+      : str(ptr), len(ptr ? static_cast<intptr_t>(erthink::strlen(ptr)) : -1) {
     CONSTEXPR_ASSERT(len >= 0 || (len == -1 && !str));
   }
   /* Конструктор из std::string ОБЯЗАН быть explicit для предотвращения
    * проблемы reference to temporary object из-за неявного создания string_view
    * из переданного по значению временного экземпляра std::string. */
-  explicit /* не может быть cxx11_constexpr из-за std::string::size() */
-      string_view(const std::string &s)
+  explicit cxx20_constexpr string_view(const std::string &s)
       : str(s.data()), len(static_cast<intptr_t>(s.size())) {
-    assert(s.size() < npos);
+    CONSTEXPR_ASSERT(s.size() < npos);
   }
   operator std::string() const { return std::string(data(), length()); }
 
@@ -127,12 +126,10 @@ public:
     return str[pos];
   }
   cxx11_constexpr const_reference front() const {
-    CONSTEXPR_ASSERT(len > 0);
-    return str[0];
+    return CONSTEXPR_ASSERT(len > 0), str[0];
   }
   cxx11_constexpr const_reference back() const {
-    CONSTEXPR_ASSERT(len > 0);
-    return str[len - 1];
+    return CONSTEXPR_ASSERT(len > 0), str[len - 1];
   }
   const_reference at(size_type pos) const;
   static cxx11_constexpr_var size_type npos = size_type(INT_MAX);
@@ -172,46 +169,78 @@ public:
     return h ^ 3863194411 * (h >> 11);
   }
 
-  static cxx14_constexpr intptr_t compare(const string_view &a,
-                                          const string_view &b) {
+  static __nothrow_pure_function cxx14_constexpr intptr_t
+  compare_fast(const string_view &a, const string_view &b) noexcept {
     const intptr_t diff = a.len - b.len;
     return diff               ? diff
            : (a.str == b.str) ? 0
-                              : memcmp(a.data(), b.data(), a.length());
+                              : erthink::memcmp(a.data(), b.data(), a.length());
+  }
+  static __nothrow_pure_function cxx14_constexpr intptr_t
+  compare_lexicographically(const string_view &a,
+                            const string_view &b) noexcept {
+    const size_t shortest = ::std::min(a.len, b.len);
+    if (likely(shortest > 0))
+      __cxx20_likely {
+        const intptr_t diff = erthink::memcmp(a.data(), b.data(), shortest);
+        if (likely(diff != 0))
+          __cxx20_likely return diff;
+      }
+    return a.len - b.len;
   }
   cxx14_constexpr bool operator==(const string_view &v) const {
-    return compare(*this, v) == 0;
-  }
-  cxx14_constexpr bool operator<(const string_view &v) const {
-    return compare(*this, v) < 0;
-  }
-  cxx14_constexpr bool operator>(const string_view &v) const {
-    return compare(*this, v) > 0;
-  }
-  cxx14_constexpr bool operator<=(const string_view &v) const {
-    return compare(*this, v) <= 0;
-  }
-  cxx14_constexpr bool operator>=(const string_view &v) const {
-    return compare(*this, v) >= 0;
+    return compare_fast(*this, v) == 0;
   }
   cxx14_constexpr bool operator!=(const string_view &v) const {
-    return compare(*this, v) != 0;
+    return compare_fast(*this, v) != 0;
+  }
+  cxx14_constexpr bool operator<(const string_view &v) const {
+    return compare_lexicographically(*this, v) < 0;
+  }
+  cxx14_constexpr bool operator>(const string_view &v) const {
+    return compare_lexicographically(*this, v) > 0;
+  }
+  cxx14_constexpr bool operator<=(const string_view &v) const {
+    return compare_lexicographically(*this, v) <= 0;
+  }
+  cxx14_constexpr bool operator>=(const string_view &v) const {
+    return compare_lexicographically(*this, v) >= 0;
   }
 
-  static /* не может быть cxx11_constexpr из-за std::string::size() */ intptr_t
-  compare(const std::string &a, const string_view &b) {
-    return compare(string_view(a), b);
+  static cxx20_constexpr intptr_t compare_fast(const std::string &a,
+                                               const string_view &b) noexcept {
+    return compare_fast(string_view(a), b);
   }
-  static /* не может быть cxx11_constexpr из-за std::string::size() */ intptr_t
-  compare(const string_view &a, const std::string &b) {
-    return compare(a, string_view(b));
+  static cxx20_constexpr intptr_t compare_fast(const string_view &a,
+                                               const std::string &b) noexcept {
+    return compare_fast(a, string_view(b));
   }
-  bool operator==(const std::string &s) const { return compare(*this, s) == 0; }
-  bool operator<(const std::string &s) const { return compare(*this, s) < 0; }
-  bool operator>(const std::string &s) const { return compare(*this, s) > 0; }
-  bool operator<=(const std::string &s) const { return compare(*this, s) <= 0; }
-  bool operator>=(const std::string &s) const { return compare(*this, s) >= 0; }
-  bool operator!=(const std::string &s) const { return compare(*this, s) != 0; }
+  bool cxx20_constexpr operator==(const std::string &s) const noexcept {
+    return compare_fast(*this, s) == 0;
+  }
+  bool cxx20_constexpr operator!=(const std::string &s) const noexcept {
+    return compare_fast(*this, s) != 0;
+  }
+  static cxx20_constexpr intptr_t compare_lexicographically(
+      const std::string &a, const string_view &b) noexcept {
+    return compare_lexicographically(string_view(a), b);
+  }
+  static cxx20_constexpr intptr_t compare_lexicographically(
+      const string_view &a, const std::string &b) noexcept {
+    return compare_lexicographically(a, string_view(b));
+  }
+  bool cxx20_constexpr operator<(const std::string &s) const noexcept {
+    return compare_lexicographically(*this, s) < 0;
+  }
+  bool cxx20_constexpr operator>(const std::string &s) const noexcept {
+    return compare_lexicographically(*this, s) > 0;
+  }
+  bool cxx20_constexpr operator<=(const std::string &s) const noexcept {
+    return compare_lexicographically(*this, s) <= 0;
+  }
+  bool cxx20_constexpr operator>=(const std::string &s) const noexcept {
+    return compare_lexicographically(*this, s) >= 0;
+  }
 
   friend std::ostream &operator<<(std::ostream &out,
                                   const fptu::string_view &sv) {
@@ -229,42 +258,54 @@ template <> struct hash<fptu::string_view> {
 };
 } // namespace std
 
-inline bool operator>(const fptu::string_view &a, const std::string &b) {
-  return fptu::string_view::compare(a, b) > 0;
+cxx20_constexpr bool operator>(const fptu::string_view &a,
+                               const std::string &b) noexcept {
+  return fptu::string_view::compare_lexicographically(a, b) > 0;
 }
-inline bool operator>=(const fptu::string_view &a, const std::string &b) {
-  return fptu::string_view::compare(a, b) >= 0;
+cxx20_constexpr bool operator>=(const fptu::string_view &a,
+                                const std::string &b) noexcept {
+  return fptu::string_view::compare_lexicographically(a, b) >= 0;
 }
-inline bool operator<(const fptu::string_view &a, const std::string &b) {
-  return fptu::string_view::compare(a, b) < 0;
+cxx20_constexpr bool operator<(const fptu::string_view &a,
+                               const std::string &b) noexcept {
+  return fptu::string_view::compare_lexicographically(a, b) < 0;
 }
-inline bool operator<=(const fptu::string_view &a, const std::string &b) {
-  return fptu::string_view::compare(a, b) <= 0;
+cxx20_constexpr bool operator<=(const fptu::string_view &a,
+                                const std::string &b) noexcept {
+  return fptu::string_view::compare_lexicographically(a, b) <= 0;
 }
-inline bool operator==(const fptu::string_view &a, const std::string &b) {
-  return fptu::string_view::compare(a, b) == 0;
+cxx20_constexpr bool operator==(const fptu::string_view &a,
+                                const std::string &b) noexcept {
+  return fptu::string_view::compare_fast(a, b) == 0;
 }
-inline bool operator!=(const fptu::string_view &a, const std::string &b) {
-  return fptu::string_view::compare(a, b) != 0;
+cxx20_constexpr bool operator!=(const fptu::string_view &a,
+                                const std::string &b) noexcept {
+  return fptu::string_view::compare_fast(a, b) != 0;
 }
 
-inline bool operator>(const std::string &a, const fptu::string_view &b) {
-  return fptu::string_view::compare(a, b) > 0;
+cxx20_constexpr bool operator>(const std::string &a,
+                               const fptu::string_view &b) noexcept {
+  return fptu::string_view::compare_lexicographically(a, b) > 0;
 }
-inline bool operator>=(const std::string &a, const fptu::string_view &b) {
-  return fptu::string_view::compare(a, b) >= 0;
+cxx20_constexpr bool operator>=(const std::string &a,
+                                const fptu::string_view &b) noexcept {
+  return fptu::string_view::compare_lexicographically(a, b) >= 0;
 }
-inline bool operator<(const std::string &a, const fptu::string_view &b) {
-  return fptu::string_view::compare(a, b) < 0;
+cxx20_constexpr bool operator<(const std::string &a,
+                               const fptu::string_view &b) noexcept {
+  return fptu::string_view::compare_lexicographically(a, b) < 0;
 }
-inline bool operator<=(const std::string &a, const fptu::string_view &b) {
-  return fptu::string_view::compare(a, b) <= 0;
+cxx20_constexpr bool operator<=(const std::string &a,
+                                const fptu::string_view &b) noexcept {
+  return fptu::string_view::compare_lexicographically(a, b) <= 0;
 }
-inline bool operator==(const std::string &a, const fptu::string_view &b) {
-  return fptu::string_view::compare(a, b) == 0;
+cxx20_constexpr bool operator==(const std::string &a,
+                                const fptu::string_view &b) noexcept {
+  return fptu::string_view::compare_fast(a, b) == 0;
 }
-inline bool operator!=(const std::string &a, const fptu::string_view &b) {
-  return fptu::string_view::compare(a, b) != 0;
+cxx20_constexpr bool operator!=(const std::string &a,
+                                const fptu::string_view &b) noexcept {
+  return fptu::string_view::compare_fast(a, b) != 0;
 }
 
 #endif /* __cplusplus */

@@ -38,45 +38,51 @@ struct iovec {
 namespace fptu {
 
 struct FPTU_API_TYPE iovec : public ::iovec {
-  cxx11_constexpr iovec() {
+  cxx11_constexpr iovec() noexcept {
     iov_base = nullptr;
     iov_len = 0;
   }
 
-  cxx11_constexpr iovec(const void *data, std::size_t size) {
+  cxx11_constexpr iovec(const void *data, std::size_t size) noexcept {
     iov_base = const_cast<void *>(data);
     iov_len = size;
   }
 
-  cxx11_constexpr iovec(const ::iovec &io) {
+  cxx11_constexpr iovec(const ::iovec &io) noexcept {
     iov_base = io.iov_base;
     iov_len = io.iov_len;
   }
 
-  cxx14_constexpr iovec &operator=(const ::iovec &io) {
+  cxx14_constexpr iovec &operator=(const ::iovec &io) noexcept {
     iov_base = io.iov_base;
     iov_len = io.iov_len;
     return *this;
   }
 
-  cxx14_constexpr void set(const void *data, std::size_t size) {
+  cxx14_constexpr void set(const void *data, std::size_t size) noexcept {
     iov_base = const_cast<void *>(data);
     iov_len = size;
   }
 
-  cxx11_constexpr std::size_t size() const { return iov_len; }
-  cxx11_constexpr const uint8_t *data() const {
+  cxx11_constexpr std::size_t size() const noexcept { return iov_len; }
+  cxx11_constexpr const uint8_t *data() const noexcept {
     return static_cast<const uint8_t *>(iov_base);
   }
-  cxx11_constexpr const uint8_t *end() const { return data() + size(); }
-  cxx11_constexpr uint8_t *data() { return static_cast<uint8_t *>(iov_base); }
-  cxx11_constexpr uint8_t *end() { return data() + size(); }
+  cxx11_constexpr const uint8_t *end() const noexcept {
+    return data() + size();
+  }
+  cxx11_constexpr uint8_t *data() noexcept {
+    return static_cast<uint8_t *>(iov_base);
+  }
+  cxx11_constexpr uint8_t *end() noexcept { return data() + size(); }
 
-  cxx11_constexpr bool equal(const ::iovec &io) const {
+  cxx11_constexpr bool equal(const ::iovec &io) const noexcept {
     return this->iov_base == io.iov_base && this->iov_len == io.iov_len;
   }
 
-  cxx11_constexpr bool not_equal(const ::iovec &io) const { return !equal(io); }
+  cxx11_constexpr bool not_equal(const ::iovec &io) const noexcept {
+    return !equal(io);
+  }
 };
 } // namespace fptu
 

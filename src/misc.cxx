@@ -19,6 +19,10 @@
 #define _CRT_SECURE_NO_WARNINGS
 #endif
 
+#include <iomanip>
+#include <sstream>
+
+#include "fast_positive/erthink/erthink.h++"
 #include "fast_positive/tuples/internal.h"
 
 #ifdef _MSC_VER
@@ -101,6 +105,56 @@ std::ostream &operator<<(std::ostream &out, const tuple_rw *) {
 }
 
 } // namespace details
+
+__cold std::ostream &operator<<(std::ostream &out, const datetime_t &value) {
+  int year_offset = 1900;
+  struct tm utc_tm;
+#if defined(_WIN32) || defined(_WIN64)
+  const __time64_t utc64 = value.utc;
+  const errno_t gmtime_rc = _gmtime64_s(&utc_tm, &utc64);
+  assert(gmtime_rc == 0 && utc_tm.tm_year > 69);
+  (void)gmtime_rc;
+#else
+  time_t utc_sec = value.seconds();
+  for (;;) {
+    const struct tm *gmtime_rc = gmtime_r(&utc_sec, &utc_tm);
+    assert(gmtime_rc != nullptr);
+    (void)gmtime_rc;
+    if (sizeof(time_t) > 4 || utc_tm.tm_year > 69) {
+      assert(utc_tm.tm_year > 69);
+      break;
+    }
+    year_offset += 28;
+    utc_sec -= (utc_tm.tm_year < 8 || year_offset != 1984)
+                   ? (28 * 365 + 7) * 24 * 3600
+                   : (28 * 365 + 6) * 24 * 3600 /* correction for >= 2100 */;
+  }
+#endif
+
+  const auto save_fmtfl = out.flags();
+  const auto safe_fill = out.fill('0');
+  out << std::setw(4) << utc_tm.tm_year + year_offset << "-" << std::setw(2)
+      << utc_tm.tm_mon + 1 << "-" << std::setw(2) << utc_tm.tm_mday << "T"
+      << std::setw(2) << utc_tm.tm_hour << ":" << std::setw(2) << utc_tm.tm_min
+      << ":" << std::setw(2) << utc_tm.tm_sec;
+
+  if (value.fractional()) {
+    char buffer[erthink::grisu::fractional_printer::max_chars];
+    erthink::grisu::fractional_printer printer(buffer,
+                                               erthink::array_end(buffer));
+    erthink::grisu::convert(
+        printer, erthink::grisu::diy_fp::fixedpoint(value.fractional(), -32));
+    const auto end = printer.finalize_and_get().second;
+    const ptrdiff_t length = end - buffer;
+    assert(length > 0 && length < ptrdiff_t(sizeof(buffer)));
+    out.write(buffer, length);
+  }
+
+  out.fill(safe_fill);
+  out.flags(save_fmtfl);
+  return out;
+}
+
 } /* namespace fptu */
 
 //----------------------------------------------------------------------------

@@ -219,10 +219,10 @@ enum fptu_bits {
 
 /* Типы полей.
  *
- * Следует обратить внимание, что fptu_farray является флагом,
+ * Следует обратить внимание, что fptu_farray являлся флагом,
  * а значения начиная с fptu_flag_filter используются как маски для
  * поиска/фильтрации полей (и видимо будут выделены в отдельный enum). */
-enum fptu_type : unsigned {
+enum fptu_type : uint32_t {
   fptu_null = ~0u,
   // fixed length, without ex-data (descriptor only)
   fptu_uint16 = fptu::details::make_tag(fptu::genus::u16, 0, true, true, false),
@@ -296,7 +296,6 @@ FPTU_API uint_fast16_t fptu_make_tag(unsigned column,
                                      fptu_type type) cxx11_noexcept;
 FPTU_API bool fptu_tag_is_fixedsize(fptu_tag_t tag) cxx11_noexcept;
 FPTU_API bool fptu_tag_is_deleted(fptu_tag_t tag) cxx11_noexcept;
-FPTU_API size_t fptu_tag_value_fixedsize(fptu_tag_t tag) cxx11_noexcept;
 
 //------------------------------------------------------------------------------
 
@@ -827,9 +826,89 @@ FPTU_API const char *fptu_type_name(const fptu_type) cxx11_noexcept;
 //------------------------------------------------------------------------------
 /* Сервисные функции и классы для C++ */
 
+using fptu_payload = fptu::details::relative_payload;
+
+struct FPTU_API_TYPE fptu_field : public fptu::details::field_loose {
+  using base = fptu::details::field_loose;
+  fptu_field() = delete;
+  ~fptu_field() = delete;
+
+  unsigned cxx11_constexpr colnum() const { return base::id(); }
+  inline fptu_type cxx11_constexpr type() const;
+  fptu::genus cxx11_constexpr genus() const { return base::type(); }
+
+  uint16_t get_payload_uint16() const {
+    assert(fptu::details::is_inplaced(genus()));
+    return inplaced;
+  }
+
+  const fptu_payload *payload() const {
+    assert(!fptu::details::is_inplaced(genus()));
+    assert(relative.have_payload());
+    return relative.payload();
+  }
+
+  //  fptu_payload *payload() {
+  //    assert(!fptu::details::is_inplaced(genus()));
+  //    assert(relative.have_payload());
+  //    return relative.payload();
+  //  }
+
+  const fptu::string_view string() const {
+    assert(type() == fptu_cstr);
+    return relative.have_payload() ? relative.payload()->stretchy.string.read()
+                                   : fptu::string_view();
+  }
+
+  const fptu::string_view opaque() const {
+    assert(type() == fptu_opaque);
+    return relative.have_payload() ? relative.payload()->stretchy.varbin.read()
+                                   : fptu::string_view();
+  }
+
+  const fptu::string_view nested() const {
+    assert(type() == fptu_nested);
+    return relative.have_payload() ? relative.payload()->stretchy.tuple.read()
+                                   : fptu::string_view();
+  }
+
+  uint32_t peek_u32() const {
+    assert(type() == fptu_uint32);
+    return payload()->fixed.u32;
+  }
+
+  int32_t peek_i32() const {
+    assert(type() == fptu_int32);
+    return payload()->fixed.i32;
+  }
+
+  const float &peek_fp32() const {
+    assert(type() == fptu_fp32);
+    return payload()->fixed.f32;
+  }
+
+  uint64_t peek_u64() const {
+    assert(type() == fptu_uint64);
+    return payload()->fixed.unaligned_u64;
+  }
+
+  int64_t peek_i64() const {
+    assert(type() == fptu_int64);
+    return payload()->fixed.unaligned_i64;
+  }
+
+  const double &peek_fp64() const {
+    assert(type() == fptu_fp64);
+    return payload()->fixed.unaligned_f64;
+  }
+};
+
 namespace fptu_legacy {
 
-using namespace fptu;
+using fptu::buffer_enough;
+using fptu::buffer_limit;
+using fptu::max_field_bytes;
+using fptu::max_fields;
 
 static cxx11_constexpr fptu_type genus2legacy(fptu::genus type,
                                               unsigned colnum = 0) {
@@ -849,7 +928,11 @@ static cxx11_constexpr fptu_filter filter_mask(fptu_type type) {
   return fptu_filter(UINT32_C(1) << type2genus(type));
 }
 
-using tuple_ptr = tuple_rw_managed;
+static cxx11_constexpr size_t value_fixed_size(fptu_type type) {
+  return fptu::value_fixed_size(type2genus(type));
+}
+
+using tuple_ptr = fptu::tuple_rw_managed;
 
 inline int erase(fptu_rw *pt, unsigned column, fptu_type type) {
   return fptu_erase(pt, column, fptu_type_or_filter(type));
@@ -969,6 +1052,54 @@ inline std::size_t check_and_get_buffer_size(const fptu_ro &ro,
 inline std::size_t get_buffer_size(const fptu_ro &ro, unsigned more_items,
                                    unsigned more_payload) {
   return fptu_get_buffer_size(ro, more_items, more_payload);
+}
+
+template <typename type> static inline fptu_lge cmp2lge(type left, type right) {
+  if (left == right)
+    return fptu_eq;
+  return (left < right) ? fptu_lt : fptu_gt;
+}
+
+template <typename type> static inline fptu_lge diff2lge(type diff) {
+  return cmp2lge<type>(diff, 0);
+}
+
+fptu_lge cmp2lge(fptu_lge left, fptu_lge right) = delete;
+fptu_lge diff2lge(fptu_lge diff) = delete;
+
+static inline fptu_lge cmp_binary_str(const void *left_data,
+                                      std::size_t left_len,
+                                      const char *right_cstr) {
+  std::size_t right_len = right_cstr ? strlen(right_cstr) : 0;
+  return fptu_cmp_binary(left_data, left_len, right_cstr, right_len);
+}
+
+static inline fptu_lge cmp_str_binary(const char *left_cstr,
+                                      const void *right_data,
+                                      std::size_t right_len) {
+  std::size_t left_len = left_cstr ? strlen(left_cstr) : 0;
+  return fptu_cmp_binary(left_cstr, left_len, right_data, right_len);
+}
+
+template <typename type> static inline int cmp2int(type left, type right) {
+  return (right > left) ? -1 : left > right;
+}
+
+template <typename iterator>
+static inline fptu_lge
+depleted2lge(const iterator &left_pos, const iterator &left_end,
+             const iterator &right_pos, const iterator &right_end) {
+  bool left_depleted = (left_pos >= left_end);
+  bool right_depleted = (right_pos >= right_end);
+
+  if (left_depleted == right_depleted)
+    return fptu_eq;
+  return left_depleted ? fptu_lt : fptu_gt;
+}
+
+static inline __maybe_unused fptu_lge cmpbin(const void *a, const void *b,
+                                             std::size_t bytes) {
+  return diff2lge(std::memcmp(a, b, bytes));
 }
 
 #if 0
@@ -1200,7 +1331,7 @@ static int upsert_number(fptu_rw *pt, unsigned colnum,
 #endif
 
 int tuple2json(const fptu_ro &tuple, fptu_emit_func output, void *output_ctx,
-               const string_view &indent, unsigned depth,
+               const fptu::string_view &indent, unsigned depth,
                const void *schema_ctx, fptu_tag2name_func tag2name,
                fptu_value2enum_func value2enum,
                const fptu_json_options options = fptu_json_default);
@@ -1226,7 +1357,7 @@ inline int tuple2json(const fptu_ro &tuple, FILE *file, const char *indent,
  * При ошибках fptu возвращается соответствующий код ошибки.
  * При успешном завершении возвращается FPTU_SUCCESS (нуль). */
 FPTU_API int tuple2json(const fptu_ro &tuple, std::ostream &stream,
-                        const string_view &indent, unsigned depth,
+                        const fptu::string_view &indent, unsigned depth,
                         const void *schema_ctx, fptu_tag2name_func tag2name,
                         fptu_value2enum_func value2enum,
                         const fptu_json_options options = fptu_json_default);
@@ -1238,12 +1369,16 @@ FPTU_API int tuple2json(const fptu_ro &tuple, std::ostream &stream,
  *
  * При ошибках вбрасывает исключения, включая fptu::bad_tuple */
 FPTU_API std::string
-tuple2json(const fptu_ro &tuple, const string_view &indent, unsigned depth,
-           const void *schema_ctx, fptu_tag2name_func tag2name,
+tuple2json(const fptu_ro &tuple, const fptu::string_view &indent,
+           unsigned depth, const void *schema_ctx, fptu_tag2name_func tag2name,
            fptu_value2enum_func value2enum,
            const fptu_json_options options = fptu_json_default);
 
 } // namespace fptu_legacy
+
+fptu_type cxx11_constexpr fptu_field::type() const {
+  return fptu_legacy::genus2legacy(base::type());
+}
 
 //------------------------------------------------------------------------------
 
@@ -1293,6 +1428,11 @@ bool operator>(const fptu_lge &, const fptu_lge &) = delete;
 bool operator>=(const fptu_lge &, const fptu_lge &) = delete;
 bool operator<(const fptu_lge &, const fptu_lge &) = delete;
 bool operator<=(const fptu_lge &, const fptu_lge &) = delete;
+
+bool operator>(const fptu_type &, const fptu_type &) = delete;
+bool operator>=(const fptu_type &, const fptu_type &) = delete;
+bool operator<(const fptu_type &, const fptu_type &) = delete;
+bool operator<=(const fptu_type &, const fptu_type &) = delete;
 
 #endif /* __cplusplus */
 
