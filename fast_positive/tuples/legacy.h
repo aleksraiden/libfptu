@@ -833,9 +833,9 @@ struct FPTU_API_TYPE fptu_field : public fptu::details::field_loose {
   fptu_field() = delete;
   ~fptu_field() = delete;
 
-  unsigned cxx11_constexpr colnum() const { return base::id(); }
-  inline fptu_type cxx11_constexpr type() const;
-  fptu::genus cxx11_constexpr genus() const { return base::type(); }
+  cxx11_constexpr unsigned colnum() const { return base::id(); }
+  cxx11_constexpr fptu_type type() const;
+  cxx11_constexpr fptu::genus genus() const { return base::type(); }
 
   uint16_t get_payload_uint16() const {
     assert(fptu::details::is_inplaced(genus()));
