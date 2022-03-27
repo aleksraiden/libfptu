@@ -79,8 +79,11 @@ if(BUILD_TESTING)
       else()
         set(GTEST_CLONE_TAG "origin/${GTEST_USE_VERSION}")
       endif()
+      if(NOT DEFINED GTEST_CLONE_URL)
+        set(GTEST_CLONE_URL https://github.com/google/googletest.git)
+      endif()
 
-      message(STATUS "Not found GoogleTest sources, downloading it...")
+      message(STATUS "Not found GoogleTest sources, downloading it (GTEST_CLONE_URL: ${GTEST_CLONE_URL}, GTEST_CLONE_TAG: ${GTEST_CLONE_TAG})...")
       configure_file(${CMAKE_CURRENT_LIST_DIR}/googletest-download.cmake.in ${CMAKE_BINARY_DIR}/googletest-download/CMakeLists.txt)
       execute_process(COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
         RESULT_VARIABLE result
