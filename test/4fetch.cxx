@@ -289,8 +289,7 @@ TEST(Fetch, Variate) {
         ASSERT_STREQ(nullptr, fptu_legacy::check(origin_pt));
         origin_ro = fptu_take_noshrink(origin_pt);
         ASSERT_STREQ(nullptr, fptu_legacy::check(origin_ro));
-        EXPECT_EQ(size_t(fptu::unit_size * (n + 1)),
-                  origin_ro.total_bytes);
+        EXPECT_EQ(size_t(fptu::unit_size * (n + 1)), origin_ro.total_bytes);
 
         origin_items =
             (size_t)(fptu_end_ro(origin_ro) - fptu_begin_ro(origin_ro));
@@ -348,8 +347,7 @@ TEST(Fetch, Variate) {
         ASSERT_STREQ(nullptr, fptu_legacy::check(origin_pt));
         origin_ro = fptu_take_noshrink(origin_pt);
         ASSERT_STREQ(nullptr, fptu_legacy::check(origin_ro));
-        EXPECT_EQ(size_t(fptu::unit_size * (n + n + 1)),
-                  origin_ro.total_bytes);
+        EXPECT_EQ(size_t(fptu::unit_size * (n + n + 1)), origin_ro.total_bytes);
 
         origin_items =
             (size_t)(fptu_end_ro(origin_ro) - fptu_begin_ro(origin_ro));
