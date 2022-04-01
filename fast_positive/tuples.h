@@ -37,7 +37,6 @@
 
 #include "fast_positive/tuples/details/warnings_push_system.h"
 
-#include <cmath>     // for std::ldexp
 #include <limits>    // for numeric_limits<>
 #include <memory>    // for std::uniq_ptr
 #include <ostream>   // for std::ostream

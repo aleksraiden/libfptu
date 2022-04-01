@@ -70,7 +70,6 @@
 #include <string.h>
 
 #include <cinttypes> // for PRId64, PRIu64
-#include <cmath>     // for exp2()
 #include <cstdarg>   // for va_list
 #include <cstdio>    // for _vscprintf()
 #include <cstdlib>   // for snprintf()

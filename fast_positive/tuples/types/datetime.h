@@ -23,7 +23,6 @@
 #include <cstdint>
 #include <ctime>
 #else
-#include <math.h>
 #include <stdint.h>
 #include <time.h>
 #endif /* __cplusplus */
