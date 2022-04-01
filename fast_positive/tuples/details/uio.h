@@ -38,20 +38,12 @@ struct iovec {
 namespace fptu {
 
 struct FPTU_API_TYPE iovec : public ::iovec {
-  cxx11_constexpr iovec() noexcept {
-    iov_base = nullptr;
-    iov_len = 0;
-  }
+  cxx11_constexpr iovec() noexcept : ::iovec({nullptr, 0}) {}
 
-  cxx11_constexpr iovec(const void *data, std::size_t size) noexcept {
-    iov_base = const_cast<void *>(data);
-    iov_len = size;
-  }
+  cxx11_constexpr iovec(const void *data, std::size_t size) noexcept
+      : ::iovec({const_cast<void *>(data), size}) {}
 
-  cxx11_constexpr iovec(const ::iovec &io) noexcept {
-    iov_base = io.iov_base;
-    iov_len = io.iov_len;
-  }
+  cxx14_constexpr iovec(const ::iovec &io) noexcept : ::iovec(io) {}
 
   cxx14_constexpr iovec &operator=(const ::iovec &io) noexcept {
     iov_base = io.iov_base;
