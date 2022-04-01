@@ -218,16 +218,16 @@ static diy_fp cached_power(const int in_exp2, int &out_exp10) cxx11_noexcept {
 
   /* LY: avoid branches and IEEE754-to-integer conversion,
    * which could leads to save/restore FPU's flags/mode. */
+  cxx11_constexpr_var double log2_10 = 3.321928094887362347870319;
   cxx11_constexpr_var int64_t factor =
-      static_cast<int64_t>(IEEE754_DOUBLE_IMPLICIT_LEAD /
-                           3.321928094887362347870319 /* log2(10.0) */);
+      static_cast<int64_t>(IEEE754_DOUBLE_IMPLICIT_LEAD / log2_10);
   const int exp2_rebased = (-61 - in_exp2);
   const int64_t exp10_unbiased_scaled =
       exp2_rebased * factor + 348 * IEEE754_DOUBLE_IMPLICIT_LEAD - 1;
   const unsigned exp10_unbiased = static_cast<unsigned>(
       exp10_unbiased_scaled >> IEEE754_DOUBLE_MANTISSA_SIZE);
   assert(static_cast<int>(exp10_unbiased) ==
-         static_cast<int>(ceil((-61 - in_exp2) / log2(10.0))) + 347);
+         static_cast<int>(ceil((-61 - in_exp2) / log2_10)) + 347);
 
   const std::size_t index = exp10_unbiased >> 3;
   assert(n_items > index);
