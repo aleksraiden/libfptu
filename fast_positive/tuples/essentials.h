@@ -174,7 +174,7 @@ enum genus : unsigned /* тип данных, 5 бит */ {
   bin384 = 24,
   bin512 = 25,
 
-  // application-specific with predefined size and DENIL=0
+  // application-specific with predefined size and zeroed DENIL
   app_reserved_64 = 26,
   app_reserved_128 = 27,
   mac = 28,

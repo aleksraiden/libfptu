@@ -1382,32 +1382,32 @@ fptu_type cxx11_constexpr fptu_field::type() const {
 
 //------------------------------------------------------------------------------
 
-static __inline fptu_error fptu_upsert_string(fptu_rw *pt, unsigned column,
-                                              const std::string &value) {
+static inline fptu_error fptu_upsert_string(fptu_rw *pt, unsigned column,
+                                            const std::string &value) {
   return fptu_upsert_string(pt, column, value.data(), value.size());
 }
-static __inline fptu_error fptu_insert_string(fptu_rw *pt, unsigned column,
-                                              const std::string &value) {
+static inline fptu_error fptu_insert_string(fptu_rw *pt, unsigned column,
+                                            const std::string &value) {
   return fptu_insert_string(pt, column, value.data(), value.size());
 }
 
 #if HAVE_cxx17_std_string_view
-static __inline fptu_error fptu_upsert_string(fptu_rw *pt, unsigned column,
-                                              const std::string_view &value) {
+static inline fptu_error fptu_upsert_string(fptu_rw *pt, unsigned column,
+                                            const std::string_view &value) {
   return fptu_upsert_string(pt, column, value.data(), value.size());
 }
-static __inline fptu_error fptu_insert_string(fptu_rw *pt, unsigned column,
-                                              const std::string_view &value) {
+static inline fptu_error fptu_insert_string(fptu_rw *pt, unsigned column,
+                                            const std::string_view &value) {
   return fptu_insert_string(pt, column, value.data(), value.size());
 }
 #endif /* HAVE_cxx17_std_string_view */
 
-static __inline fptu_error fptu_upsert_string(fptu_rw *pt, unsigned column,
-                                              const fptu::string_view &value) {
+static inline fptu_error fptu_upsert_string(fptu_rw *pt, unsigned column,
+                                            const fptu::string_view &value) {
   return fptu_upsert_string(pt, column, value.data(), value.size());
 }
-static __inline fptu_error fptu_insert_string(fptu_rw *pt, unsigned column,
-                                              const fptu::string_view &value) {
+static inline fptu_error fptu_insert_string(fptu_rw *pt, unsigned column,
+                                            const fptu::string_view &value) {
   return fptu_insert_string(pt, column, value.data(), value.size());
 }
 
