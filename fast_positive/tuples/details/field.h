@@ -120,11 +120,11 @@ union stretchy_value_varbin {
   };
   unit_t flat[1];
 
-  cxx14_constexpr std::size_t length() const cxx11_noexcept {
+  cxx11_constexpr std::size_t length() const cxx11_noexcept {
     static_assert(8 - genus_bitness == 3, "Oops");
     const std::size_t tailbytes = reserved14_tailbytes & 3;
-    CONSTEXPR_ASSERT(brutto_units > 1 || tailbytes == 0);
-    return units2bytes(brutto_units) - 4 + tailbytes;
+    return CONSTEXPR_ASSERT(brutto_units > 1 || tailbytes == 0),
+           units2bytes(brutto_units) - 4 + tailbytes;
   }
 
   static std::size_t estimate_space(const string_view &value) {
@@ -238,11 +238,11 @@ struct FPTU_API_TYPE stretchy_value_tuple {
   cxx11_constexpr const unit_t *end_data_units() const cxx11_noexcept {
     return erthink::constexpr_pointer_cast<const unit_t *>(this) + brutto_units;
   }
-  cxx14_constexpr std::size_t payload_units() const cxx11_noexcept {
+  cxx11_constexpr std::size_t payload_units() const cxx11_noexcept {
     const ptrdiff_t result = brutto_units - 1 - index_size();
-    CONSTEXPR_ASSERT(result >= 0 &&
-                     result == end_data_units() - begin_data_units());
-    return result;
+    return CONSTEXPR_ASSERT(result >= 0 &&
+                            result == end_data_units() - begin_data_units()),
+           result;
   }
   cxx11_constexpr const char *begin_data_bytes() const cxx11_noexcept {
     return erthink::constexpr_pointer_cast<const char *>(begin_data_units());
@@ -250,11 +250,11 @@ struct FPTU_API_TYPE stretchy_value_tuple {
   cxx11_constexpr const char *end_data_bytes() const cxx11_noexcept {
     return erthink::constexpr_pointer_cast<const char *>(end_data_units());
   }
-  cxx14_constexpr std::size_t payload_bytes() const cxx11_noexcept {
+  cxx11_constexpr std::size_t payload_bytes() const cxx11_noexcept {
     const ptrdiff_t result = end_data_bytes() - begin_data_bytes();
-    CONSTEXPR_ASSERT(result >= 0 &&
-                     size_t(result) == units2bytes(payload_units()));
-    return result;
+    return CONSTEXPR_ASSERT(result >= 0 &&
+                            size_t(result) == units2bytes(payload_units())),
+           result;
   }
 
   cxx11_constexpr string_view read() const {
