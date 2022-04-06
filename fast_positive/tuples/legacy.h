@@ -930,7 +930,7 @@ static cxx11_constexpr fptu_filter filter_mask(fptu_type type) {
   return fptu_filter(UINT32_C(1) << type2genus(type));
 }
 
-static cxx14_constexpr size_t value_fixed_size(fptu_type type) {
+static erthink_dynamic_constexpr size_t value_fixed_size(fptu_type type) {
   return fptu::value_fixed_size(type2genus(type));
 }
 
