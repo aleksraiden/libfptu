@@ -912,25 +912,29 @@ using fptu::buffer_limit;
 using fptu::max_field_bytes;
 using fptu::max_fields;
 
-static cxx11_constexpr fptu_type genus2legacy(fptu::genus type,
-                                              unsigned colnum = 0) {
+__nothrow_const_function static cxx11_constexpr fptu_type
+genus2legacy(fptu::genus type, unsigned colnum = 0) {
   return fptu_type(fptu::details::make_tag(type, colnum, true, true, false));
 }
 
-static cxx11_constexpr fptu::details::tag_t legacy2tag(const fptu_tag_t tag) {
+__nothrow_const_function static cxx11_constexpr fptu::details::tag_t
+legacy2tag(const fptu_tag_t tag) {
   return fptu::details::make_tag(fptu::details::loose_genus_and_id_t(tag), true,
                                  true, false);
 }
 
-static cxx11_constexpr fptu::genus type2genus(fptu_type type) {
+__nothrow_const_function static cxx11_constexpr fptu::genus
+type2genus(fptu_type type) {
   return fptu::details::tag2genus(type);
 }
 
-static cxx11_constexpr fptu_filter filter_mask(fptu_type type) {
+__nothrow_const_function static cxx11_constexpr fptu_filter
+filter_mask(fptu_type type) {
   return fptu_filter(UINT32_C(1) << type2genus(type));
 }
 
-static erthink_dynamic_constexpr size_t value_fixed_size(fptu_type type) {
+__nothrow_const_function static erthink_dynamic_constexpr size_t
+value_fixed_size(fptu_type type) {
   return fptu::value_fixed_size(type2genus(type));
 }
 

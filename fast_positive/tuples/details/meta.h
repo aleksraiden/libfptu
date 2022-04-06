@@ -617,18 +617,19 @@ template <> struct genus_traits<app_reserved_128> : public unit_n<4> {
 namespace details {
 
 extern FPTU_API const uint8_t genus2looseunits_array[];
-static inline std::size_t loose_units_dynamic(const genus type) cxx11_noexcept {
+static inline __nothrow_const_function std::size_t
+loose_units_dynamic(const genus type) cxx11_noexcept {
   return genus2looseunits_array[type];
 }
 
 extern FPTU_API const uint8_t genus2preplacedbytes_array[];
-static inline std::size_t
+static inline __nothrow_const_function std::size_t
 preplaced_bytes_dynamic(const genus type) cxx11_noexcept {
   return genus2preplacedbytes_array[type];
 }
 
 extern FPTU_API const genus_mask_t trivially_convertible_from_array[];
-static inline bool
+static inline __nothrow_const_function bool
 is_trivially_convertible_dynamic(const genus from,
                                  const genus to) cxx11_noexcept {
   return utils::test_bit(trivially_convertible_from_array[to], from);
@@ -774,9 +775,12 @@ is_trivially_convertible_constexpr(const genus from,
   }
 }
 
+__nothrow_const_function
 ERTHINK_DYNAMIC_CONSTEXPR(size_t, loose_units, (const genus type), (type), type)
-ERTHINK_DYNAMIC_CONSTEXPR(size_t, preplaced_bytes, (const genus type), (type),
-                          type)
+__nothrow_const_function ERTHINK_DYNAMIC_CONSTEXPR(size_t, preplaced_bytes,
+                                                   (const genus type), (type),
+                                                   type)
+__nothrow_const_function
 ERTHINK_DYNAMIC_CONSTEXPR(bool, is_trivially_convertible,
                           (const genus from, const genus to), (from, to), to)
 
@@ -842,12 +846,12 @@ static inline void preplaced_erase(const genus type,
                                    \ for dll-interface class */
 #endif
 
-erthink_dynamic_constexpr bool
+__nothrow_const_function erthink_dynamic_constexpr bool
 value_fixed_size(const genus type) cxx11_noexcept {
   return details::preplaced_bytes(type);
 }
 
-erthink_dynamic_constexpr bool
+__nothrow_const_function erthink_dynamic_constexpr bool
 value_fixed_size(const details::tag_t tag) cxx11_noexcept {
   return CONSTEXPR_ASSERT(details::is_fixed_size(tag)),
          value_fixed_size(details::tag2genus(tag));
