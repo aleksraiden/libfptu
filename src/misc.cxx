@@ -109,8 +109,9 @@ std::ostream &operator<<(std::ostream &out, const tuple_rw *) {
 __cold std::ostream &operator<<(std::ostream &out, const datetime_t &value) {
   int year_offset = 1900;
   struct tm utc_tm;
-#if defined(_WIN32) || defined(_WIN64)
-  const __time64_t utc64 = value.utc;
+#if (defined(_WIN32) || defined(_WIN64)) &&                                    \
+    !(defined(__MINGW32__) || defined(__MINGW64__))
+  const __time64_t utc64 = value.utc_seconds();
   const errno_t gmtime_rc = _gmtime64_s(&utc_tm, &utc64);
   assert(gmtime_rc == 0 && utc_tm.tm_year > 69);
   (void)gmtime_rc;
