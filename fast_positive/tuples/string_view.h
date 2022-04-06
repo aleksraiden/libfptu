@@ -22,6 +22,7 @@
 
 #ifdef __cplusplus
 
+#include <algorithm> // for std::min()
 #include <climits>
 #include <cstddef>
 #include <cstring>
