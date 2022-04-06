@@ -33,6 +33,8 @@
 
 #ifdef _MSC_VER
 #pragma warning(push)
+#pragma warning(disable : 4190) /* 'xyz' has C-linkage specified, but returns  \
+                                   UDT 'abc' which is incompatible with C */
 #if _MSC_VER < 1900
 #pragma warning(disable : 4350) /* behavior change: 'std::_Wrap_alloc... */
 #endif
