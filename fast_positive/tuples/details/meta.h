@@ -556,7 +556,8 @@ template <> struct genus_traits<property> : public unit_1<uint32_t, 0> {
       utils::bitset_mask<property>::value;
 
   static cxx11_constexpr return_type empty() cxx11_noexcept {
-    return property_pair(string_view(), 0);
+    return property_pair(string_view(),
+                         int8_t(/* MSVC' warning is really mad */ 0));
   }
   static cxx11_constexpr return_type
   read(const details::relative_payload *payload) cxx11_noexcept {
