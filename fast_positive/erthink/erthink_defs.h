@@ -162,8 +162,15 @@
 #endif
 #endif /* __cplusplus */
 
+#if defined(__fallthrough) &&                                                  \
+    (defined(__MINGW__) || defined(__MINGW32__) || defined(__MINGW64__))
+#undef __fallthrough
+#endif /* __fallthrough workaround for MinGW */
+
 #ifndef __fallthrough
-#if __has_cpp_attribute(fallthrough)
+#if defined(__cplusplus) && (__has_cpp_attribute(fallthrough) &&               \
+                             (!defined(__clang__) || __clang__ > 4)) ||        \
+    __cplusplus >= 201703L
 #define __fallthrough [[fallthrough]]
 #elif __GNUC_PREREQ(8, 0) && defined(__cplusplus) && __cplusplus >= 201103L
 #define __fallthrough [[fallthrough]]
@@ -347,12 +354,19 @@
 
 //------------------------------------------------------------------------------
 
+#ifndef __printf_args
 #if defined(__GNUC__) || __has_attribute(__format__)
+#if defined(__MINGW__) || defined(__MINGW32__) || defined(__MINGW64__)
+#define __printf_args(format_index, first_arg)                                 \
+  __attribute__((__format__(__gnu_printf__, format_index, first_arg)))
+#else
 #define __printf_args(format_index, first_arg)                                 \
   __attribute__((__format__(__printf__, format_index, first_arg)))
+#endif /* MinGW */
 #else
 #define __printf_args(format_index, first_arg)
 #endif
+#endif /* __printf_args */
 
 #if !defined(__thread) &&                                                      \
     ((defined(_MSC_VER) && !defined(__clang__)) || defined(__DMC__))
@@ -590,11 +604,14 @@
 #endif /* __hidden */
 
 #ifndef __dll_export
-#if defined(_WIN32) || defined(_WIN64) || defined(__CYGWIN__)
+#if defined(_WIN32) || defined(_WIN64) || defined(__CYGWIN__) ||               \
+    defined(__MINGW__) || defined(__MINGW32__) || defined(__MINGW64__)
 #if defined(__GNUC__) || __has_attribute(__dllexport__)
 #define __dll_export __attribute__((__dllexport__))
-#else
+#elif defined(_MSC_VER)
 #define __dll_export __declspec(dllexport)
+#else
+#define __dll_export
 #endif
 #elif defined(__GNUC__) || __has_attribute(__visibility__)
 #define __dll_export __attribute__((__visibility__("default")))
@@ -604,14 +621,15 @@
 #endif /* __dll_export */
 
 #ifndef __dll_import
-#if defined(_WIN32) || defined(_WIN64) || defined(__CYGWIN__)
+#if defined(_WIN32) || defined(_WIN64) || defined(__CYGWIN__) ||               \
+    defined(__MINGW__) || defined(__MINGW32__) || defined(__MINGW64__)
 #if defined(__GNUC__) || __has_attribute(__dllimport__)
 #define __dll_import __attribute__((__dllimport__))
-#else
+#elif defined(_MSC_VER)
 #define __dll_import __declspec(dllimport)
+#else
+#define __dll_import
 #endif
-#elif defined(__GNUC__) || __has_attribute(__visibility__)
-#define __dll_import __attribute__((__visibility__("default")))
 #else
 #define __dll_import
 #endif

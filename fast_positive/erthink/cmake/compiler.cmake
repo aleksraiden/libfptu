@@ -89,9 +89,11 @@ if(CMAKE_C_COMPILER_LOADED)
     if(tmp_lcc_marker GREATER -1 AND tmp_e2k_marker GREATER tmp_lcc_marker)
       execute_process(COMMAND ${CMAKE_C_COMPILER} -print-version
         OUTPUT_VARIABLE CMAKE_C_COMPILER_VERSION
-        RESULT_VARIABLE tmp_lcc_probe_result)
+        RESULT_VARIABLE tmp_lcc_probe_result
+        OUTPUT_STRIP_TRAILING_WHITESPACE)
       set(CMAKE_COMPILER_IS_ELBRUSC ON)
       set(CMAKE_C_COMPILER_ID "Elbrus")
+      message(STATUS "Detected Elbrus C compiler ${CMAKE_C_COMPILER_VERSION}")
     else()
       set(CMAKE_COMPILER_IS_ELBRUSC OFF)
     endif()
@@ -113,9 +115,11 @@ if(CMAKE_CXX_COMPILER_LOADED)
     if(tmp_lcc_marker GREATER -1 AND tmp_e2k_marker GREATER tmp_lcc_marker)
       execute_process(COMMAND ${CMAKE_CXX_COMPILER} -print-version
         OUTPUT_VARIABLE CMAKE_CXX_COMPILER_VERSION
-        RESULT_VARIABLE tmp_lxx_probe_result)
+        RESULT_VARIABLE tmp_lxx_probe_result
+        OUTPUT_STRIP_TRAILING_WHITESPACE)
       set(CMAKE_COMPILER_IS_ELBRUSCXX ON)
       set(CMAKE_CXX_COMPILER_ID "Elbrus")
+      message(STATUS "Detected Elbrus C++ compiler ${CMAKE_CXX_COMPILER_VERSION}")
     else()
       set(CMAKE_COMPILER_IS_ELBRUSCXX OFF)
     endif()
@@ -823,9 +827,13 @@ macro(setup_compile_flags)
 endmacro(setup_compile_flags)
 
 if(CMAKE_CXX_COMPILER_LOADED)
-  # determine library for for std::filesystem
+  # determine library for std::filesystem
   set(LIBCXX_FILESYSTEM "")
-  if(CMAKE_COMPILER_IS_CLANG)
+  if(CMAKE_COMPILER_IS_ELBRUSCXX)
+    if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS 1.26.0)
+      set(LIBCXX_FILESYSTEM "stdc++fs")
+    endif()
+  elseif(CMAKE_COMPILER_IS_CLANG)
     if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS 5.0)
       set(LIBCXX_FILESYSTEM "c++experimental")
     elseif(CMAKE_CXX_COMPILER_VERSION VERSION_LESS 9.0)

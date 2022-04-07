@@ -1,4 +1,4 @@
-/*
+﻿/*
  *  Copyright (c) 1994-2022 Leonid Yuriev <leo@yuriev.ru>.
  *  https://github.com/erthink/erthink
  *
@@ -104,8 +104,9 @@ union uint128_t {
   uint8_t u8[16];
 
 #ifdef __cplusplus
-  uint128_t() = default;
-  constexpr uint128_t(const uint128_t &) = default;
+  uint128_t() noexcept = default;
+  constexpr uint128_t(const uint128_t &) noexcept = default;
+  cxx14_constexpr uint128_t(uint128_t &&) noexcept = default;
   cxx14_constexpr uint128_t &operator=(const uint128_t &) noexcept = default;
 #if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
   constexpr uint128_t(uint64_t h, uint64_t l) noexcept : l(l), h(h) {}
@@ -179,23 +180,13 @@ union uint128_t {
 #endif /* ERTHINK_ARCH64 */
   }
 
-  __nothrow_pure_function static erthink_u128_constexpr11
-      std::pair<uint128_t, uint128_t>
-      divmod(const uint128_t &dividend, const uint128_t &divisor) noexcept;
-
+  struct divmod_result;
+  __nothrow_pure_function static erthink_u128_constexpr11 divmod_result
+  divmod(const uint128_t &dividend, const uint128_t &divisor) noexcept;
   erthink_u128_constexpr14 uint128_t
-  divmod_quotient(const uint128_t &divisor) noexcept {
-    const auto quotient_remainder(divmod(*this, divisor));
-    *this = quotient_remainder.second;
-    return quotient_remainder.first;
-  }
-
+  divmod_quotient(const uint128_t &divisor) noexcept;
   erthink_u128_constexpr14 uint128_t
-  divmod_remainder(const uint128_t &divisor) noexcept {
-    const auto quotient_remainder(divmod(*this, divisor));
-    *this = quotient_remainder.first;
-    return quotient_remainder.second;
-  }
+  divmod_remainder(const uint128_t &divisor) noexcept;
 
   erthink_u128_constexpr14 std::pair<char *, std::errc>
   to_chars(char *first, char *last, unsigned base = 10) const noexcept;
@@ -617,6 +608,10 @@ erthink_u128_constexpr11 bool operator<=(const uint128_t &x,
 
 //------------------------------------------------------------------------------
 
+struct uint128_t::divmod_result {
+  uint128_t quotient, remainder;
+};
+
 namespace details {
 
 constexpr unsigned char2digit(char c) noexcept {
@@ -700,7 +695,11 @@ erthink_u128_constexpr14 uint64_t reciprocal_3by2(const uint128_t &d) noexcept {
   return v;
 }
 
-erthink_u128_constexpr14 std::pair<uint64_t, uint64_t>
+struct divmod_2by1_result {
+  uint64_t quotient, remainder;
+};
+
+erthink_u128_constexpr14 divmod_2by1_result
 divmod_2by1(const uint128_t &u, const uint64_t d, const uint64_t v) noexcept {
   auto q = umul128(v, u.h) + u;
   auto r = u.l - ++q.h * d;
@@ -715,7 +714,12 @@ divmod_2by1(const uint128_t &u, const uint64_t d, const uint64_t v) noexcept {
   return {q.h, r};
 }
 
-erthink_u128_constexpr14 std::pair<uint64_t, uint128_t>
+struct divmod_3by2_result {
+  uint64_t quotient;
+  uint128_t remainder;
+};
+
+erthink_u128_constexpr14 divmod_3by2_result
 divmod_3by2(const uint64_t u2, const uint64_t u1, const uint64_t u0,
             const uint128_t &d, const uint64_t v) noexcept {
   auto q = umul128(v, u2) + uint128_t(u2, u1);
@@ -731,7 +735,7 @@ divmod_3by2(const uint64_t u2, const uint64_t u1, const uint64_t u0,
   return {q.h + 1, r};
 }
 
-erthink_u128_constexpr14 __nothrow_pure_function std::pair<uint128_t, uint128_t>
+erthink_u128_constexpr14 __nothrow_pure_function uint128_t::divmod_result
 divmod_u128(uint128_t x, uint128_t y) noexcept {
   if (y.h == 0) {
     const unsigned s = clz64(y.l);
@@ -743,8 +747,8 @@ divmod_u128(uint128_t x, uint128_t y) noexcept {
     }
     const auto v = reciprocal_2by1(y.l);
     const auto h = divmod_2by1(uint128_t(o, x.h), y.l, v);
-    const auto l = divmod_2by1(uint128_t(h.second, x.l), y.l, v);
-    return {uint128_t(h.first, l.first), l.second >> s};
+    const auto l = divmod_2by1(uint128_t(h.remainder, x.l), y.l, v);
+    return {uint128_t(h.quotient, l.quotient), l.remainder >> s};
   }
 
   if (y.h > x.h)
@@ -761,18 +765,18 @@ divmod_u128(uint128_t x, uint128_t y) noexcept {
   y <<= s;
   const auto v = reciprocal_3by2(y);
   const auto r = divmod_3by2(o, x.h, x.l, y, v);
-  return {r.first, r.second >> s};
+  return {r.quotient, r.remainder >> s};
 }
 
-erthink_u128_constexpr14 __nothrow_pure_function std::pair<uint128_t, uint128_t>
+erthink_u128_constexpr14 __nothrow_pure_function uint128_t::divmod_result
 divmod_s128(const uint128_t &x, const uint128_t &y) noexcept {
   const auto sign = static_cast<int32_t>(x.most_significant_word() ^
                                          y.most_significant_word());
   auto pair = divmod_u128(x.most_significant_bit() ? -x : x,
                           y.most_significant_bit() ? -y : y);
   if (sign < 0) {
-    pair.first = -pair.first;
-    pair.second = -pair.second;
+    pair.quotient = -pair.quotient;
+    pair.remainder = -pair.remainder;
   }
   return pair;
 }
@@ -797,7 +801,7 @@ erthink_u128_constexpr11 uint128_t operator/(const uint128_t &x,
 #if ERTHINK_USE_NATIVE_128
   return uint128_t(x.u128 / y.u128);
 #else
-  return details::divmod_u128(x, y).first;
+  return details::divmod_u128(x, y).quotient;
 #endif /* ERTHINK_USE_NATIVE_128 */
 }
 
@@ -806,11 +810,11 @@ erthink_u128_constexpr11 uint128_t operator%(const uint128_t &x,
 #if ERTHINK_USE_NATIVE_128
   return uint128_t(x.u128 % y.u128);
 #else
-  return details::divmod_u128(x, y).second;
+  return details::divmod_u128(x, y).remainder;
 #endif /* ERTHINK_USE_NATIVE_128 */
 }
 
-erthink_u128_constexpr11 std::pair<uint128_t, uint128_t>
+erthink_u128_constexpr11 uint128_t::divmod_result
 uint128_t::divmod(const uint128_t &dividend,
                   const uint128_t &divisor) noexcept {
 #if ERTHINK_USE_NATIVE_128
@@ -818,6 +822,20 @@ uint128_t::divmod(const uint128_t &dividend,
 #else
   return details::divmod_u128(dividend, divisor);
 #endif /* ERTHINK_USE_NATIVE_128 */
+}
+
+erthink_u128_constexpr14 uint128_t
+uint128_t::divmod_quotient(const uint128_t &divisor) noexcept {
+  const auto quotient_remainder(divmod(*this, divisor));
+  *this = quotient_remainder.remainder;
+  return quotient_remainder.quotient;
+}
+
+erthink_u128_constexpr14 uint128_t
+uint128_t::divmod_remainder(const uint128_t &divisor) noexcept {
+  const auto quotient_remainder(divmod(*this, divisor));
+  *this = quotient_remainder.quotient;
+  return quotient_remainder.remainder;
 }
 
 //------------------------------------------------------------------------------
