@@ -25,7 +25,9 @@
 #include <numeric>   // for std::iota
 #include <sstream>
 
+#ifndef DO_GENERATE_BASIC
 #include "autogen_u128_basic.h++"
+#endif /* !DO_GENERATE_BASIC */
 
 //------------------------------------------------------------------------------
 
@@ -271,8 +273,8 @@ static void gen(std::ostream &out, const erthink::uint128_t &A,
   OUT(!(!A), !!native_u128(A));
 
   if (B) {
-    OUT(U128::divmod(A, B).first, native_u128(A) / native_u128(B));
-    OUT(U128::divmod(A, B).second, native_u128(A) % native_u128(B));
+    OUT(U128::divmod(A, B).quotient, native_u128(A) / native_u128(B));
+    OUT(U128::divmod(A, B).remainder, native_u128(A) % native_u128(B));
   }
 
   OUT((A >> S), native_u128(A) >> S);
@@ -350,8 +352,8 @@ static void probe(const erthink::uint128_t &a, const erthink::uint128_t &b) {
     const auto pair = erthink::uint128_t::divmod(a, b);
     const auto q = native_u128(a) / native_u128(b);
     const auto r = native_u128(a) % native_u128(b);
-    ASSERT_EQ(native_u128(pair.first), q);
-    ASSERT_EQ(native_u128(pair.second), r);
+    ASSERT_EQ(native_u128(pair.quotient), q);
+    ASSERT_EQ(native_u128(pair.remainder), r);
   }
 
   const auto s = unsigned(b) & 127;
@@ -541,7 +543,7 @@ int main(int argc, char **argv) {
 
 #ifdef DO_GENERATE_BASIC
   std::ofstream out("autogen_u128_basic.h++");
-  out << "// The contents of this file are generated automatically. \n";
+  out << "// The contents of this file are generated automatically.\n";
   out << "// You should not edit it manually.\n";
   for (auto i = 0; i < 5; ++i) {
     gen(out, lcg(), lcg());
