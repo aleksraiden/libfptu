@@ -1,6 +1,6 @@
-
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-[![Build Status](https://travis-ci.org/erthink/libfptu.svg?branch=devel)](https://travis-ci.org/erthink/libfptu)
-[![Build status](https://ci.appveyor.com/api/projects/status/8617mtix9paivmkx/branch/devel?svg=true)](https://ci.appveyor.com/project/erthink/libfptu/branch/devel)
-[![CircleCI](https://circleci.com/gh/erthink/libfptu/tree/devel.svg?style=svg)](https://circleci.com/gh/erthink/libfptu/tree/devel)
-[![Coverity Scan Status](https://scan.coverity.com/projects/12919/badge.svg)](https://scan.coverity.com/projects/erthink-libfptu)
+[![GithubCI](https://github.com/erthink/libfptu/workflows/CI/badge.svg)](https://github.com/erthink/libfptu/actions?query=workflow%3ACI)
+[![AppveyorCI](https://ci.appveyor.com/api/projects/status/8617mtix9paivmkx/branch/master?svg=true)](https://ci.appveyor.com/project/leo-yuriev/libfptu/branch/master)
+[![CircleCI](https://circleci.com/gh/erthink/libfptu/tree/master.svg?style=svg)](https://circleci.com/gh/erthink/libfptu/tree/master)
+[![CirrusCI](https://api.cirrus-ci.com/github/erthink/libfptu.svg)](https://cirrus-ci.com/github/erthink/libfptu)
+[![Coverity Scan](https://scan.coverity.com/projects/12919/badge.svg)](https://scan.coverity.com/projects/leo-yuriev-libfptu)

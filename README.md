@@ -18,10 +18,11 @@ English translation [by Google](https://github-com.translate.goog/erthink/libfpt
 and [by Yandex](https://translate.yandex.ru/translate?url=https%3A%2F%2Fgithub.com%2Ferthink%2Flibfptu%2Ftree%2Fmaster&lang=ru-en).
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-[![Build Status](https://travis-ci.org/erthink/libfptu.svg?branch=master)](https://travis-ci.org/erthink/libfptu)
-[![Build status](https://ci.appveyor.com/api/projects/status/8617mtix9paivmkx/branch/master?svg=true)](https://ci.appveyor.com/project/leo-yuriev/libfptu/branch/master)
+[![GithubCI](https://github.com/erthink/libfptu/workflows/CI/badge.svg)](https://github.com/erthink/libfptu/actions?query=workflow%3ACI)
+[![AppveyorCI](https://ci.appveyor.com/api/projects/status/8617mtix9paivmkx/branch/master?svg=true)](https://ci.appveyor.com/project/leo-yuriev/libfptu/branch/master)
 [![CircleCI](https://circleci.com/gh/erthink/libfptu/tree/master.svg?style=svg)](https://circleci.com/gh/erthink/libfptu/tree/master)
-[![Coverity Scan Status](https://scan.coverity.com/projects/12919/badge.svg)](https://scan.coverity.com/projects/leo-yuriev-libfptu)
+[![CirrusCI](https://api.cirrus-ci.com/github/erthink/libfptu.svg)](https://cirrus-ci.com/github/erthink/libfptu)
+[![Coverity Scan](https://scan.coverity.com/projects/12919/badge.svg)](https://scan.coverity.com/projects/leo-yuriev-libfptu)
 
 *The Future will (be) [Positive](https://www.ptsecurity.com). Всё будет хорошо.*
 
@@ -666,11 +667,11 @@ $ objdump -f -h -j .text libfptu.so
 libfptu.so:     file format elf64-x86-64
 architecture: i386:x86-64, flags 0x00000150:
 HAS_SYMS, DYNAMIC, D_PAGED
-start address 0x00016da0
+start address 0x00000000000168e0
 
 Sections:
-Idx Name          Size      VMA       LMA       File off  Algn
- 11 .text         0001f590  00016da0  00016da0  00016da0  2**4
+Idx Name          Size      VMA               LMA               File off  Algn
+ 13 .text         0002880e  00000000000168e0  00000000000168e0  000168e0  2**4
                   CONTENTS, ALLOC, LOAD, READONLY, CODE
 ```
 
