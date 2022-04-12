@@ -160,7 +160,7 @@ set(LIBFPTU_SOURCES
   tablets.cxx
   time.cxx
 
-  ${CMAKE_CURRENT_BINARY_DIR}/version.cxx)
+  "${CMAKE_CURRENT_BINARY_DIR}/version.cxx")
 
 set(FPTU_HAVE_AVX512 FALSE)
 if(X86_32 OR X86_64)
@@ -194,10 +194,10 @@ elseif(E2K)
   list(APPEND LIBFPTU_SOURCES scan_SSE2.cxx scan_AVX.cxx scan_AVX2.cxx)
 endif()
 
-if(CMAKE_COMPILER_IS_GNUCC)
-  set_source_files_properties(ro.cxx COMPILE_FLAGS -save-temps)
-  set_source_files_properties(rw.cxx COMPILE_FLAGS -save-temps)
-endif()
+#if(CMAKE_COMPILER_IS_GNUCC)
+#  set_source_files_properties(ro.cxx COMPILE_FLAGS -save-temps)
+#  set_source_files_properties(rw.cxx COMPILE_FLAGS -save-temps)
+#endif()
 
 if(NOT DEFINED LIBFPTU_CONFIG_H)
   set(LIBFPTU_CONFIG_H "${CMAKE_CURRENT_BINARY_DIR}/../fast_positive/tuples/config.h")

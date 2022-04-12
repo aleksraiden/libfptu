@@ -283,7 +283,7 @@ endif()
 set(LIBERTHINK_TYPE STATIC)
 add_subdirectory(fast_positive/erthink)
 add_subdirectory(src)
-if(FPTU_ENABLE_TESTS)
+if(FPTU_ENABLE_TESTS AND BUILD_TESTING)
   add_subdirectory(test)
 endif()
 
