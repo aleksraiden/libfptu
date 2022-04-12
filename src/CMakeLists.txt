@@ -59,8 +59,6 @@ if(NOT LIBFPTU_TYPE)
   endif()
 endif()
 
-set(LIBFPTU_CONFIG_H "${CMAKE_CURRENT_BINARY_DIR}/../fast_positive/tuples/config.h")
-
 set(LIBFPTU_HEADERS
   tuples.h
   tuples/api.h
@@ -199,6 +197,11 @@ endif()
 if(CMAKE_COMPILER_IS_GNUCC)
   set_source_files_properties(ro.cxx COMPILE_FLAGS -save-temps)
   set_source_files_properties(rw.cxx COMPILE_FLAGS -save-temps)
+endif()
+
+if(NOT DEFINED LIBFPTU_CONFIG_H)
+  set(LIBFPTU_CONFIG_H "${CMAKE_CURRENT_BINARY_DIR}/../fast_positive/tuples/config.h")
+  configure_file(${CMAKE_CURRENT_SOURCE_DIR}/../fast_positive/tuples/config.h.in ${LIBFPTU_CONFIG_H})
 endif()
 
 if(LIBFPTU_TYPE STREQUAL "PILE")
@@ -399,5 +402,4 @@ foreach(option IN LISTS options)
   message(STATUS "FPTU_${option}: ${value}")
 endforeach(option)
 
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/../fast_positive/tuples/config.h.in ${LIBFPTU_CONFIG_H})
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/version.cxx.in ${CMAKE_CURRENT_BINARY_DIR}/version.cxx)
