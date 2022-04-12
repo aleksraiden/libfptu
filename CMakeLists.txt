@@ -232,8 +232,6 @@ endif(NOT SUBPROJECT)
 
 ################################################################################
 
-include_directories("${CMAKE_CURRENT_SOURCE_DIR}")
-
 set(erthink_HEADERS
   erthink.h
   erthink_128.h
@@ -265,6 +263,8 @@ add_library(erthink INTERFACE)
 if(ERTHINK_CXX_STANDARD)
   target_compile_features(erthink INTERFACE "cxx_std_${ERTHINK_CXX_STANDARD}")
 endif()
+
+target_include_directories(erthink INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}")
 
 option(ERTHINK_ENABLE_TESTS "Build erthink tests." ${BUILD_TESTING})
 if(ERTHINK_ENABLE_TESTS AND BUILD_TESTING)
