@@ -280,7 +280,6 @@ else()
   set(HAVE_FPTU_VERSIONINFO FALSE)
 endif()
 
-include_directories("${PROJECT_SOURCE_DIR}" "${CMAKE_CURRENT_BINARY_DIR}")
 set(LIBERTHINK_TYPE STATIC)
 add_subdirectory(fast_positive/erthink)
 add_subdirectory(src)

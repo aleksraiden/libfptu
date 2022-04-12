@@ -218,6 +218,8 @@ else()
   set(fptu_target fptu)
 endif()
 
+target_include_directories(${fptu_target} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/.." "${CMAKE_CURRENT_BINARY_DIR}/..")
+
 set_target_properties(${fptu_target} PROPERTIES
   PROJECT_LABEL "Fast Positive Tuples"
   VERSION "${FPTU_VERSION}"
