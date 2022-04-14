@@ -98,7 +98,7 @@ union uint128_t {
 #ifdef ERTHINK_NATIVE_I128_TYPE
   ERTHINK_NATIVE_I128_TYPE i128;
 #endif /* ERTHINK_NATIVE_U128_TYPE */
-  uint32_t u64[2];
+  uint64_t u64[2];
   uint32_t u32[4];
   uint16_t u16[8];
   uint8_t u8[16];
@@ -234,7 +234,7 @@ struct numeric_limits<erthink::uint128_t> : public numeric_limits<unsigned> {
   using type = erthink::uint128_t;
   static constexpr int radix = 2;
   static constexpr int digits = 128;
-  static constexpr int digits10 = /* 39 */ 1 + 128 * 643l / 2136;
+  static constexpr int digits10 = /* 38 */ digits * 643l / 2136;
   static constexpr type epsilon() noexcept { return 0; }
   static constexpr type lowest() noexcept { return 0; }
   static constexpr type min() noexcept { return 0; }
