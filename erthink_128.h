@@ -93,11 +93,13 @@ union uint128_t {
 #endif /* __BYTE_ORDER__ */
   };
 #ifdef ERTHINK_NATIVE_U128_TYPE
-  ERTHINK_NATIVE_U128_TYPE u128;
+  using native = ERTHINK_NATIVE_U128_TYPE;
+  native u128;
 #endif /* ERTHINK_NATIVE_U128_TYPE */
 #ifdef ERTHINK_NATIVE_I128_TYPE
-  ERTHINK_NATIVE_I128_TYPE i128;
-#endif /* ERTHINK_NATIVE_U128_TYPE */
+  using native_signed = ERTHINK_NATIVE_I128_TYPE;
+  native_signed i128;
+#endif /* ERTHINK_NATIVE_I128_TYPE */
   uint64_t u64[2];
   uint32_t u32[4];
   uint16_t u16[8];
@@ -135,20 +137,18 @@ union uint128_t {
   }
 
 #ifdef ERTHINK_NATIVE_U128_TYPE
-  constexpr uint128_t(const ERTHINK_NATIVE_U128_TYPE &v) noexcept : u128(v) {}
-  constexpr operator ERTHINK_NATIVE_U128_TYPE() const noexcept { return u128; }
-  cxx14_constexpr uint128_t &
-  operator=(const ERTHINK_NATIVE_U128_TYPE v) noexcept {
+  constexpr uint128_t(const native &v) noexcept : u128(v) {}
+  constexpr operator native() const noexcept { return u128; }
+  cxx14_constexpr uint128_t &operator=(const native v) noexcept {
     u128 = v;
     return *this;
   }
 #endif /* ERTHINK_NATIVE_U128_TYPE */
 
 #ifdef ERTHINK_NATIVE_I128_TYPE
-  constexpr uint128_t(const ERTHINK_NATIVE_I128_TYPE &v) noexcept : i128(v) {}
-  constexpr operator ERTHINK_NATIVE_I128_TYPE() const noexcept { return i128; }
-  cxx14_constexpr uint128_t &
-  operator=(const ERTHINK_NATIVE_I128_TYPE v) noexcept {
+  explicit constexpr uint128_t(const native_signed &v) noexcept : i128(v) {}
+  explicit constexpr operator native_signed() const noexcept { return i128; }
+  cxx14_constexpr uint128_t &operator=(const native_signed v) noexcept {
     i128 = v;
     return *this;
   }
@@ -161,6 +161,20 @@ union uint128_t {
     return (l | h) != 0;
 #endif /* ERTHINK_USE_NATIVE_128 */
   }
+
+#ifdef ERTHINK_ARCH64
+  constexpr uint64_t most_significant_part() const noexcept { return h; }
+#else
+  constexpr uint32_t most_significant_part() const noexcept {
+#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+    return u32[3];
+#elif __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+    return u32[0];
+#else
+#error "FIXME: Unsupported byte order"
+#endif /* __BYTE_ORDER__ */
+  }
+#endif /* ERTHINK_ARCH64 */
 
   constexpr uint32_t most_significant_word() const noexcept {
 #if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
@@ -179,6 +193,12 @@ union uint128_t {
     return static_cast<int32_t>(most_significant_word()) < 0;
 #endif /* ERTHINK_ARCH64 */
   }
+
+  friend erthink_u128_constexpr11 uint128_t
+  operator-(const uint128_t &) noexcept;
+
+  friend erthink_u128_constexpr11 uint128_t
+  operator-(const uint128_t &, const uint128_t &) noexcept;
 
   struct divmod_result;
   __nothrow_pure_function static erthink_u128_constexpr11 divmod_result
@@ -225,14 +245,23 @@ union uint128_t {
 typedef union uint128_t uint128_t;
 #else
 
-//------------------------------------------------------------------------------
 } // namespace erthink
+// ----------------------------------------------------------------------------
 namespace std {
+
+template <> struct make_unsigned<erthink::uint128_t> {
+  using type = erthink::uint128_t;
+};
+
+template <> struct is_signed<erthink::uint128_t> : false_type {};
+template <> struct is_unsigned<erthink::uint128_t> : true_type {};
+template <> struct is_arithmetic<erthink::uint128_t> : true_type {};
+template <> struct is_integral<erthink::uint128_t> : true_type {};
+template <> struct is_floating_point<erthink::uint128_t> : false_type {};
 
 template <>
 struct numeric_limits<erthink::uint128_t> : public numeric_limits<unsigned> {
   using type = erthink::uint128_t;
-  static constexpr int radix = 2;
   static constexpr int digits = 128;
   static constexpr int digits10 = /* 38 */ digits * 643l / 2136;
   static constexpr type epsilon() noexcept { return 0; }
@@ -244,38 +273,39 @@ struct numeric_limits<erthink::uint128_t> : public numeric_limits<unsigned> {
   }
 };
 
-inline std::string to_string(const erthink::uint128_t &v, unsigned base = 10) {
+inline string to_string(const erthink::uint128_t &v, unsigned base = 10) {
   return v.to_string(base);
 }
 
 #if ERTHINK_HAVE_std_to_chars
 
-erthink_u128_constexpr11 std::to_chars_result
+erthink_u128_constexpr11 to_chars_result
 to_chars(char *first, char *last, const erthink::uint128_t &value,
          int base = 10) noexcept {
   const auto pair = value.to_chars(first, last, base);
   return {pair.first, pair.second};
 }
 
-erthink_u128_constexpr11 std::from_chars_result
-from_chars(const char *first, const char *last, erthink::uint128_t &value,
-           int base = 10) noexcept {
+erthink_u128_constexpr11 from_chars_result from_chars(const char *first,
+                                                      const char *last,
+                                                      erthink::uint128_t &value,
+                                                      int base = 10) noexcept {
   const auto triplet = erthink::uint128_t::from_chars(first, last, base);
-  if (std::get<0>(triplet) != first && std::get<2>(triplet) == std::errc())
-    value = std::get<1>(triplet);
-  return {std::get<0>(triplet), std::get<2>(triplet)};
+  if (get<0>(triplet) != first && get<2>(triplet) == errc())
+    value = get<1>(triplet);
+  return {get<0>(triplet), get<2>(triplet)};
 }
 
 #endif /* ERTHINK_HAVE_std_to_chars */
 
 } // namespace std
+// ----------------------------------------------------------------------------
 namespace erthink {
-//------------------------------------------------------------------------------
 
 constexpr bool operator==(const uint128_t &x, const uint128_t &y) noexcept {
 #if ERTHINK_USE_NATIVE_128
   return x.u128 == y.u128;
-#elif defined(ERTHINK_ARCH64)
+#elif defined(ERTHINK_ARCH64) && !defined(_MSC_VER)
   return (x.l == y.l) & (x.h == y.h);
 #else
   return (x.l == y.l) && (x.h == y.h);
@@ -285,7 +315,7 @@ constexpr bool operator==(const uint128_t &x, const uint128_t &y) noexcept {
 constexpr bool operator!=(const uint128_t &x, const uint128_t &y) noexcept {
 #if ERTHINK_USE_NATIVE_128
   return x.u128 != y.u128;
-#elif defined(ERTHINK_ARCH64)
+#elif defined(ERTHINK_ARCH64) && !defined(_MSC_VER)
   return (x.l != y.l) | (x.h != y.h);
 #else
   return (x.l != y.l) || (x.h != y.h);
@@ -339,7 +369,7 @@ ERTHINK_DYNAMIC_CONSTEXPR(uint128_t, sub128,
 
 constexpr __nothrow_pure_function bool
 gt128_constexpr(const uint128_t &x, const uint128_t &y) cxx11_noexcept {
-#ifdef ERTHINK_ARCH64
+#if defined(ERTHINK_ARCH64) && !defined(_MSC_VER)
   return (x.h > y.h) | ((x.h == y.h) & (x.l > y.l));
 #else
   return x.h > y.h || (x.h == y.h && x.l > y.l);
@@ -353,10 +383,10 @@ gt128_dynamic(const uint128_t &x, const uint128_t &y) cxx11_noexcept {
   uint128_t unused;
   const bool r = sub64borrow_next(sub64borrow_first(y.l, x.l, &unused.l), y.h,
                                   x.h, &unused.h);
+  assert(r == gt128_constexpr(x, y));
 #else
   const bool r = gt128_constexpr(x, y);
 #endif /* sub64borrow_next || __builtin_sub_overflow || __builtin_subcll */
-  assert(r == gt128_constexpr(x, y));
   return r;
 }
 
@@ -367,7 +397,7 @@ ERTHINK_DYNAMIC_CONSTEXPR(bool, gt128, (const uint128_t &x, const uint128_t &y),
 
 constexpr __nothrow_pure_function bool
 lt128_constexpr(const uint128_t &x, const uint128_t &y) cxx11_noexcept {
-#ifdef ERTHINK_ARCH64
+#if defined(ERTHINK_ARCH64) && !defined(_MSC_VER)
   return (x.h < y.h) | ((x.h == y.h) & (x.l < y.l));
 #else
   return x.h < y.h || (x.h == y.h && x.l < y.l);
@@ -381,10 +411,10 @@ lt128_dynamic(const uint128_t &x, const uint128_t &y) cxx11_noexcept {
   uint128_t unused;
   const bool r = sub64borrow_next(sub64borrow_first(x.l, y.l, &unused.l), x.h,
                                   y.h, &unused.h);
+  assert(r == lt128_constexpr(x, y));
 #else
   const bool r = lt128_constexpr(x, y);
 #endif /* sub64borrow_next || __builtin_sub_overflow || __builtin_subcll */
-  assert(r == lt128_constexpr(x, y));
   return r;
 }
 
@@ -422,7 +452,7 @@ ERTHINK_DYNAMIC_CONSTEXPR(uint128_t, umul128,
 } // namespace details
 #endif /* ERTHINK_USE_NATIVE_128 */
 
-//------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 
 constexpr uint128_t operator~(const uint128_t &v) noexcept {
 #if ERTHINK_USE_NATIVE_128
@@ -475,7 +505,6 @@ erthink_u128_constexpr11 uint128_t operator-(const uint128_t &x,
 }
 
 constexpr uint128_t operator<<(const uint128_t &v, unsigned s) noexcept {
-
 #if ERTHINK_USE_NATIVE_128
   return CONSTEXPR_ASSERT(s < 128), uint128_t(v.u128 << s);
 #else
@@ -606,7 +635,7 @@ erthink_u128_constexpr11 bool operator<=(const uint128_t &x,
   return !(x > y);
 }
 
-//------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 
 struct uint128_t::divmod_result {
   uint128_t quotient, remainder;
@@ -783,6 +812,71 @@ divmod_s128(const uint128_t &x, const uint128_t &y) noexcept {
 
 #endif /* ERTHINK_USE_NATIVE_128 */
 
+inline std::ostream &output(std::ostream &out, uint128_t v, const bool neg) {
+  const auto flags = neg ? out.flags() | std::ios_base::showpos : out.flags();
+  assert(flags & std::ios_base::basefield);
+
+  // producing digits in reverse order (from least to most significant)
+  std::array<char, /* enough for octal representation */ 128 / 3 + 1> buffer;
+  auto digits = buffer.end();
+  do {
+    char d;
+    if (flags & std::ios_base::dec) {
+      d = char(v.divmod_remainder(10)) + '0';
+    } else {
+      d = char(v) & ((flags & std::ios_base::hex) ? 15 : 7);
+      v >>= (flags & std::ios_base::hex) ? 4 : 3;
+      d += d < 10 ? '0'
+           : (flags & std::ios_base::uppercase) ? 'A' - 10
+                                                : 'a' - 10;
+    }
+    assert(digits > buffer.begin() && digits <= buffer.end());
+    *--digits = d;
+  } while (v);
+
+  // compute the result width and padding for adjustment
+  const auto prefix_len =
+      ((flags & std::ios_base::showpos) ? /* the '+' sign */ 1 : 0) +
+      ((std::ios_base::showbase !=
+        (flags & (std::ios_base::showbase | std::ios_base::dec)))
+           ? /* no prefix for decimal */ 0
+       : (flags & std::ios_base::hex) ? /* '0x' for hex */ 2
+                                      : /* '0' for octal */ 1);
+  auto padding = out.width() - (buffer.end() - digits + prefix_len);
+
+  // padding at the left up to target width in case of right adjustment
+  if (!(flags & (std::ios_base::internal | std::ios_base::left)))
+    while (padding-- > 0 && !out.bad())
+      out.put(out.fill());
+
+  // put sign and base prefix if required
+  if (prefix_len) {
+    static const char pattern[] = {'+', '0', 'x', '+', '0', 'X',
+                                   '-', '0', 'x', '-', '0', 'X'};
+    const char *prefix =
+        (flags & std::ios_base::uppercase) ? pattern + 4 : pattern + 1;
+    if (neg)
+      prefix += 6;
+    out.write((flags & std::ios_base::showpos) ? prefix - 1 : prefix,
+              prefix_len);
+  }
+
+  // padding up to target width in case of internal adjustment
+  if (flags & std::ios_base::internal)
+    while (padding-- > 0 && !out.bad())
+      out.put(out.fill());
+
+  // output digits
+  out.write(&*digits, buffer.end() - digits);
+
+  // padding at the right up to target width in case of left adjustment
+  if (flags & std::ios_base::left)
+    while (padding-- > 0 && !out.bad())
+      out.put(out.fill());
+
+  return out;
+}
+
 } // namespace details
 
 erthink_u128_constexpr11 uint128_t operator*(const uint128_t &x,
@@ -838,7 +932,7 @@ uint128_t::divmod_remainder(const uint128_t &divisor) noexcept {
   return quotient_remainder.remainder;
 }
 
-//------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 
 erthink_u128_constexpr14 uint128_t &operator*=(uint128_t &x,
                                                uint128_t y) noexcept {
@@ -855,7 +949,7 @@ erthink_u128_constexpr14 uint128_t &operator%=(uint128_t &x,
   return x = x % y;
 }
 
-//------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 
 static cxx14_constexpr uint128_t ror128(uint128_t v, unsigned s) noexcept {
   return (s &= 127) ? (v << (128 - s)) | (v >> s) : v;
@@ -891,7 +985,7 @@ template <> constexpr_intrin uint128_t bswap<uint128_t>(uint128_t v) {
   return bswap128(v);
 }
 
-//------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 
 erthink_u128_constexpr14 std::pair<char *, std::errc>
 uint128_t::to_chars(char *first, char *last, unsigned base) const noexcept {
@@ -939,68 +1033,10 @@ uint128_t::to_string(unsigned base,
 }
 
 inline std::ostream &operator<<(std::ostream &out, uint128_t v) {
-  const auto flags = out.flags();
-  assert(flags & std::ios_base::basefield);
-
-  // producing digits in reverse order (from least to most significant)
-  std::array<char, /* enough for octal representation */ 128 / 3 + 1> buffer;
-  auto digits = buffer.end();
-  do {
-    char d;
-    if (flags & std::ios_base::dec) {
-      d = char(v.divmod_remainder(10)) + '0';
-    } else {
-      d = char(v) & ((flags & std::ios_base::hex) ? 15 : 7);
-      v >>= (flags & std::ios_base::hex) ? 4 : 3;
-      d += d < 10 ? '0'
-           : (flags & std::ios_base::uppercase) ? 'A' - 10
-                                                : 'a' - 10;
-    }
-    assert(digits > buffer.begin() && digits <= buffer.end());
-    *--digits = d;
-  } while (v);
-
-  // compute the result width and padding for adjustment
-  const auto prefix_len =
-      ((flags & std::ios_base::showpos) ? /* the '+' sign */ 1 : 0) +
-      ((std::ios_base::showbase !=
-        (flags & (std::ios_base::showbase | std::ios_base::dec)))
-           ? /* no prefix for decimal */ 0
-       : (flags & std::ios_base::hex) ? /* '0x' for hex */ 2
-                                      : /* '0' for octal */ 1);
-  auto padding = out.width() - (buffer.end() - digits + prefix_len);
-
-  // padding at the left up to target width in case of right adjustment
-  if (!(flags & (std::ios_base::internal | std::ios_base::left)))
-    while (padding-- > 0 && !out.bad())
-      out.put(out.fill());
-
-  // put sign and base prefix if required
-  if (prefix_len) {
-    static const char pattern[] = {'+', '0', 'x', '+', '0', 'X'};
-    const char *prefix =
-        (flags & std::ios_base::uppercase) ? pattern + 4 : pattern + 1;
-    out.write((flags & std::ios_base::showpos) ? prefix - 1 : prefix,
-              prefix_len);
-  }
-
-  // padding up to target width in case of internal adjustment
-  if (flags & std::ios_base::internal)
-    while (padding-- > 0 && !out.bad())
-      out.put(out.fill());
-
-  // output digits
-  out.write(&*digits, buffer.end() - digits);
-
-  // padding at the right up to target width in case of left adjustment
-  if (flags & std::ios_base::left)
-    while (padding-- > 0 && !out.bad())
-      out.put(out.fill());
-
-  return out;
+  return details::output(out, v, false);
 }
 
-//------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 
 erthink_u128_constexpr14 std::tuple<const char *, uint128_t, std::errc>
 uint128_t::from_chars(const char *first, const char *last,

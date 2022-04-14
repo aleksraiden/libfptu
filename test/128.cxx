@@ -118,7 +118,7 @@ TEST(u128, from_chars) {
 #endif /* ERTHINK_HAVE_std_to_chars */
 }
 
-TEST(u128, stream) {
+TEST(u128, into_stream) {
   std::stringstream ss;
   const auto default_flags = ss.flags();
   ss << std::numeric_limits<erthink::uint128_t>::max();
