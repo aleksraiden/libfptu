@@ -117,5 +117,21 @@ rol<ERTHINK_NATIVE_U128_TYPE>(ERTHINK_NATIVE_U128_TYPE v, unsigned s) noexcept {
 
 #endif /* ERTHINK_NATIVE_U128_TYPE */
 
+#ifdef ERTHINK_NATIVE_I128_TYPE
+
+template <>
+cxx14_constexpr ERTHINK_NATIVE_I128_TYPE
+ror<ERTHINK_NATIVE_I128_TYPE>(ERTHINK_NATIVE_I128_TYPE v, unsigned s) noexcept {
+  return ror128(v, s);
+}
+
+template <>
+cxx14_constexpr ERTHINK_NATIVE_I128_TYPE
+rol<ERTHINK_NATIVE_I128_TYPE>(ERTHINK_NATIVE_I128_TYPE v, unsigned s) noexcept {
+  return rol128(v, s);
+}
+
+#endif /* ERTHINK_NATIVE_I128_TYPE */
+
 } // namespace erthink
 #endif /* __cplusplus */
