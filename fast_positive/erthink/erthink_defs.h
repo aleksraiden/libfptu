@@ -193,6 +193,8 @@
 #if !defined(cxx11_noexcept)
 #if defined(DOXYGEN) || (defined(__cplusplus) && __cplusplus >= 201103L)
 #define cxx11_noexcept noexcept
+#elif defined(__cplusplus)
+#define cxx11_noexcept throw()
 #else
 #define cxx11_noexcept
 #endif
