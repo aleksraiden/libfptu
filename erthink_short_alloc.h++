@@ -67,10 +67,10 @@ using max_align_t = ::max_align_t;
 class allocation_arena_exhausted : public std::bad_alloc {
 public:
   allocation_arena_exhausted() = default;
-  virtual const char *what() const throw() {
+  virtual const char *what() const cxx11_noexcept {
     return "short_alloc has exhausted allocation arena";
   }
-  virtual ~allocation_arena_exhausted() throw() {}
+  virtual ~allocation_arena_exhausted() cxx11_noexcept {}
 };
 
 template <bool ALLOW_OUTLIVE, std::size_t N_BYTES,
