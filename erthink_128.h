@@ -63,6 +63,7 @@
 #endif /* __cpp_lib_string_view */
 
 namespace erthink {
+union int128_t;
 #endif /* __cplusplus */
 
 #ifndef ERTHINK_USE_NATIVE_128
@@ -82,9 +83,13 @@ namespace erthink {
 #define erthink_u128_constexpr14 erthink_dynamic_constexpr
 #endif /* ERTHINK_USE_NATIVE_128 */
 
-union int128_t;
-
-union uint128_t {
+union
+#ifdef __cplusplus
+    uint128_t
+#else
+    erthink_uint128
+#endif /* __cplusplus */
+{
   struct {
 #if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
     uint64_t l, h;
@@ -244,7 +249,15 @@ union uint128_t {
 #endif /* __cplusplus */
 };
 
-union int128_t {
+// ----------------------------------------------------------------------------
+
+union
+#ifdef __cplusplus
+    int128_t
+#else
+    erthink_int128
+#endif /* __cplusplus */
+{
 #if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
   struct {
     int64_t ls, h;
@@ -401,11 +414,16 @@ union int128_t {
 };
 
 #ifndef __cplusplus
-typedef union uint128_t uint128_t;
-typedef union int128_t int128_t;
+/* type aliases for C */
+typedef union erthink_uint128 erthink_uint128_t;
+typedef union erthink_int128 erthink_int128_t;
 #else
-
 } // namespace erthink
+
+/* C-like aliases for C++ */
+using erthink_uint128_t = erthink::uint128_t;
+using erthink_int128_t = erthink::int128_t;
+
 // ----------------------------------------------------------------------------
 namespace std {
 
@@ -1217,7 +1235,7 @@ inline std::ostream &output(std::ostream &out, uint128_t v, const bool neg) {
     } else {
       d = char(v) & ((flags & std::ios_base::hex) ? 15 : 7);
       v >>= (flags & std::ios_base::hex) ? 4 : 3;
-      d += d < 10 ? '0'
+      d += d < 10                               ? '0'
            : (flags & std::ios_base::uppercase) ? 'A' - 10
                                                 : 'a' - 10;
     }
